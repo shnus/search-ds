@@ -4,6 +4,7 @@ import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.SortedSet;
 
 public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements BalancedSortedSet<E> {
@@ -61,6 +62,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             }
         }
         size++;
+        Node temp=root;
         checkBalanced();
         return true;
 
@@ -209,7 +211,9 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
     }
 
     private int compare(E v1, E v2) {
-        return comparator == null ? v1.compareTo(v2) : comparator.compare(v1, v2);
+        if (comparator==null)
+            return v1.compareTo(v2);
+        return comparator.compare(v1, v2);
     }
 
     @Override
@@ -352,31 +356,35 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
     }
 
     //на вход подается верхняя нода
-    public Node turnRightSmall(Node node){
+    private Node turnRightSmall(Node node){
+        Node a = node;
         Node b = node.left;
         Node c = node.left.right;
         Node l = node.left.left;
 
-        node.left=l;
-        node.right=node;
-        node.value = b.value;
-        node.right.left = c;
-        return node;
+        Node temp = new Node(b.value);
+        temp.left=l;
+        temp.right = a;
+        temp.right.left = c;
+
+        return temp;
     }
 
-    public Node turnLeftSmall(Node node){
+    private Node turnLeftSmall(Node node){
+        Node a = node;
         Node b = node.right;
         Node r = node.right.right;
         Node c = node.right.left;
 
-        node.left=node;
-        node.left.right=c;
-        node.right=r;
-        node.value=b.value;
-        return node;
+        Node temp = new Node(b.value);
+        temp.right=r;
+        temp.left = a;
+        temp.left.right = c;
+
+        return temp;
     }
 
-    public Node turnLeftBig(Node node){
+    private Node turnLeftBig(Node node){
         Node c = node.right.left;
         Node a = node;
         Node b = node.right;
@@ -391,7 +399,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         return node;
     }
 
-    public Node turnRightBig(Node node){
+    private Node turnRightBig(Node node){
         Node c = node.left.right;
         Node a = node;
         Node b = node.left;
@@ -417,6 +425,10 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         System.out.println(tree);
         tree.remove(5);
         System.out.println(tree);
+        Random random = new Random(100);
+        for (int i = 0; i < 1000; i++) {
+            tree.add(random.nextInt());
+        }
         tree.add(7);
         tree.add(2);
         tree.add(50);
