@@ -492,7 +492,6 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
                     "value=" + value +
                     ", left=" + left +
                     ", right=" + right +
-                    ", parent=" + parent +
                     ", color=" + color +
                     '}';
         }

@@ -7,11 +7,16 @@ import java.util.Set;
 
 public class OpenHashTable<E extends Student> extends AbstractSet<E> implements Set<E> {
 
+<<<<<<< HEAD
     private final int INITIAL_CAPACITY = 8;
     private final float LOAD_FACTOR = 0.5f;
     private Student[] table;
     private Student deleted = new Student("Deleted", "Deleted", Student.Gender.MALE, LocalDate.MIN, -1, -1);
     private int size;
+=======
+    private int size; //количество элементов в хеш-таблице
+    private int tableSize; //размер хещ-таблицы todo: измените на array.length
+>>>>>>> fc6e0743530b05acd6b17e233198ace29cb45b6e
 
 
     public OpenHashTable() {
@@ -110,6 +115,10 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
     @Override
     public int size() {
         return size;
+    }
+
+    public int getTableSize() {
+        return tableSize;
     }
 
     @Override
