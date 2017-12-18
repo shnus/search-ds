@@ -25,8 +25,11 @@ public class Student extends CheckedOpenHashTableEntity {
 
     @Override
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        //todo: реализуйте этот метод
-        return 0;
+        return Math.abs(hashCode() + probId*doubleHash())%tableSize;
+    }
+
+    private int doubleHash(){
+        return hashCode()*3;
     }
 
     public enum  Gender {
