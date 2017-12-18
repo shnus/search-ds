@@ -67,14 +67,26 @@ public class TestHashTable extends AbstractSetTest {
     }
 
     @Test
-    public void test04() {
+    public void test04_01() {
         if (testSet instanceof OpenHashTable) {
             OpenHashTable<CheckedOpenHashTableEntity> openHashTable = (OpenHashTable<CheckedOpenHashTableEntity>) testSet;
-            for (int i = 0; i < 800; i++) {
+            int tableSize = openHashTable.getTableSize();
+            CheckedOpenHashTableEntity entity = generate();
+            Assert.assertTrue("isHashFunctionValid. tableSize = " + tableSize, entity.isHashFunctionValid(tableSize));
+        }
+    }
+
+    @Test
+    public void test04_02() {
+        if (testSet instanceof OpenHashTable) {
+            OpenHashTable<CheckedOpenHashTableEntity> openHashTable = (OpenHashTable<CheckedOpenHashTableEntity>) testSet;
+            int tableSize = openHashTable.getTableSize();
+            for (int i = 0; i < 1000; i++) {
                 CheckedOpenHashTableEntity entity = generate();
                 openHashTable.add(entity);
-                if (i < 5 || (i >= 10 && i < 20) ||  (i >= 100 && i < 110) || (i >= 500 && i < 510) || (i >= 750 && i < 760)) {
-                    Assert.assertTrue("isHashFunctionValid", entity.isHashFunctionValid(openHashTable.getTableSize()));;
+                if (tableSize != openHashTable.getTableSize()) {
+                    tableSize = openHashTable.getTableSize();
+                    Assert.assertTrue("isHashFunctionValid. tableSize = " + tableSize, entity.isHashFunctionValid(tableSize));;
                 }
             }
         }
