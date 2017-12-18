@@ -1,26 +1,22 @@
 package ru.mail.polis;
 
-import java.time.LocalDate;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Set;
 
-public class OpenHashTable<E extends Student> extends AbstractSet<E> implements Set<E> {
+public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-<<<<<<< HEAD
     private final int INITIAL_CAPACITY = 8;
     private final float LOAD_FACTOR = 0.5f;
-    private Student[] table;
-    private Student deleted = new Student("Deleted", "Deleted", Student.Gender.MALE, LocalDate.MIN, -1, -1);
-    private int size;
-=======
-    private int size; //количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы todo: измените на array.length
->>>>>>> fc6e0743530b05acd6b17e233198ace29cb45b6e
+    private OpenHashTableEntity[] table;
+    private OpenHashTableEntity deleted = (tableSize, probId) -> -1;
+    private int size;//количество элементов в хеш-таблице
+    private int tableSize; //размер хещ-таблицы
 
 
     public OpenHashTable() {
-        this.table = new Student[INITIAL_CAPACITY];
+        this.table = new OpenHashTableEntity[INITIAL_CAPACITY];
+        tableSize = table.length;
     }
 
     /**
@@ -33,16 +29,18 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
     @Override
     public boolean add(E value) {
         int probId = 0;
-        int hash = value.hashCode(table.length, probId);
+        int hash = value.hashCode(getTableSize(), probId);
 
         while (table[hash] == deleted || table[hash] != null) {
-            hash = value.hashCode(table.length, ++probId);
+            if(table[hash].equals(value))
+                return false;
+            hash = value.hashCode(getTableSize(), ++probId);
         }
         table[hash] = value;
 
         size++;
-        if(table.length*LOAD_FACTOR <= size)
-            resize(table.length * 2);
+        if(getTableSize()*LOAD_FACTOR <= size)
+            resize(getTableSize() * 2);
         return true;
     }
 
@@ -58,17 +56,17 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
-        int hash = value.hashCode(table.length, probId);
+        int hash = value.hashCode(getTableSize(), probId);
 
         while (table[hash] != null){
             if(table[hash].equals(value)){
                 table[hash] = deleted;
                 size--;
-                if(table.length*LOAD_FACTOR <= size*2)
-                    resize(table.length * 2);
+                if(getTableSize()*LOAD_FACTOR <= size*2)
+                    resize(getTableSize() * 2);
                 return true;
             }
-            hash = value.hashCode(table.length, ++probId);
+            hash = value.hashCode(getTableSize(), ++probId);
         }
         return false;
     }
@@ -85,31 +83,25 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
-        int hash = value.hashCode(table.length, probId);
-
+        int hash = value.hashCode(getTableSize(), probId);
         while (table[hash] != null){
             if(table[hash].equals(value)){
                 return true;
             }
-            hash = value.hashCode(table.length, ++probId);
+            hash = value.hashCode(getTableSize(), ++probId);
         }
         return false;
     }
 
     private void resize(int newSize){
-        //todo
-        Student[] newTable = new Student[newSize];
-        for (Student s:table) {
-            if(s != null && s != deleted) {
-                int probId = 0;
-                int hash = s.hashCode(newTable.length, probId);
-                while (newTable[hash] != null) {
-                    hash = s.hashCode(table.length, ++probId);
-                }
-                newTable[hash] = s;
-            }
+        OpenHashTableEntity[] oldTable = table;
+        table = new OpenHashTableEntity[newSize];
+        tableSize = table.length;
+        size = 0;
+        for (OpenHashTableEntity s: oldTable) {
+            if(s != null && s != deleted)
+                add((E)s);
         }
-        table = newTable;
     }
 
     @Override
@@ -129,7 +121,7 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for (Student s: table ) {
+        for (OpenHashTableEntity s: table ) {
             if(s != null && !s.equals(deleted))
             str.append(s.toString()).append("\n");
         }
@@ -139,11 +131,21 @@ public class OpenHashTable<E extends Student> extends AbstractSet<E> implements 
     public static void main(String[] args) {
         OpenHashTable<Student> students = new OpenHashTable<>();
 
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 2000; i++) {
             Student std = SimpleStudentGenerator.getInstance().generate();
             students.add(std);
+            if(!students.contains(std)) {
+                System.out.println(std);
+                System.out.println(students.contains(std));
+            }
+            students.add(std);
+            if(!students.contains(std)) {
+                System.out.println(std);
+                System.out.println(students.contains(std));
+            }
+            //System.out.println(students.contains(std));
         }
 
-        System.out.println(students.toString());
+        //System.out.println(students.toString());
     }
 }

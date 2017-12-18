@@ -25,11 +25,13 @@ public class Student extends CheckedOpenHashTableEntity {
 
     @Override
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        return Math.abs(hashCode() + probId*doubleHash())%tableSize;
+        if (probId < 0 || probId >= tableSize)
+            throw new IllegalArgumentException();
+        return (Math.abs(probId*doubleHash(tableSize) + hashCode())%tableSize);
     }
 
-    private int doubleHash(){
-        return hashCode()*3;
+    private int doubleHash(int tableSize){
+        return 31;
     }
 
     public enum  Gender {
