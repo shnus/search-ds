@@ -1,18 +1,16 @@
 package ru.mail.polis;
 
-import java.util.AbstractSet;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
 
-public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements BalancedSortedSet<E> {
+public class AVLTree<E extends Comparable<E>> extends BinarySearchTree<E> implements BalancedSortedSet<E> {
 
     private final Comparator<E> comparator;
 
-    private BinarySearchTree.Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private Node<E> root;
     private int size;
-    //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public AVLTree() {
         this(null);
@@ -20,6 +18,33 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     public AVLTree(Comparator<E> comparator) {
         this.comparator = comparator;
+    }
+
+    @Override
+    public boolean contains(Object value) {
+        if (value == null) {
+            throw new NullPointerException("value is null");
+        }
+        return findNode(value) != null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Node<E> findNode(Object object) {
+        E value = (E) object;
+        if (root != null) {
+            Node<E> current = root;
+            while (current != null) {
+                int cmp = compare(current.value, value);
+                if (cmp == 0) {
+                    return current;
+                } else if (cmp < 0) {
+                    current = current.right;
+                } else {
+                    current = current.left;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -31,8 +56,33 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        return false;
+        if (root == null) {
+            root = new Node<>(value, null);
+            size++;
+            return true;
+        }
+        Node<E> current = root;
+        while (true) {
+            Node<E> parent = current;
+            int cmp = compare(current.value, value);
+            if (cmp == 0)
+                return false;
+            else if (cmp > 0) {
+                current = current.left;
+            } else {
+                current = current.right;
+            }
+            if (current == null) {
+                if (cmp > 0) {
+                    parent.left = new Node<>(value, parent);
+                } else {
+                    parent.right = new Node<>(value, parent);
+                }
+                reBalance(parent);
+                size++;
+                return true;
+            }
+        }
     }
 
     /**
@@ -43,48 +93,165 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      * @return true, если элемент содержался в дереве
      */
     @Override
+    @SuppressWarnings("unchecked")
     public boolean remove(Object object) {
-        @SuppressWarnings("unchecked")
+        if (root == null)
+            return false;
+        Node<E> child = root;
         E value = (E) object;
-        //todo: следует реализовать
+        while (child != null) {
+            Node<E> current = child;
+            int cmp = compare(value, current.value);
+            if (cmp == 0) {
+                delete(current);
+                size--;
+                return true;
+            } else if (cmp > 0) {
+                child = current.right;
+            } else {
+                child = current.left;
+            }
+        }
         return false;
     }
 
-    /**
-     * Ищет элемент с таким же значением в дереве.
-     * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
-     *
-     * @param object элемент который необходимо поискать
-     * @return true, если такой элемент содержится в дереве
-     */
-    @Override
-    public boolean contains(Object object) {
-        @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
-        return false;
+    private void delete(Node<E> node) {
+        if (node.left == null && node.right == null) {
+            if (node.parent == null) {
+                root = null;
+            } else {
+                Node<E> parent = node.parent;
+                if (parent.left == node) {
+                    parent.left = null;
+                } else {
+                    parent.right = null;
+                }
+                reBalance(parent);
+            }
+            return;
+        }
+        Node<E> child;
+        if (node.left != null) {
+            child = node.left;
+            while (child.right != null) child = child.right;
+            node.value = child.value;
+            delete(child);
+        } else {
+            child = node.right;
+            while (child.left != null) child = child.left;
+            node.value = child.value;
+            delete(child);
+        }
     }
 
-    /**
-     * Ищет наименьший элемент в дереве
-     * @return Возвращает наименьший элемент в дереве
-     * @throws NoSuchElementException если дерево пустое
-     */
+    private void reBalance(Node<E> node) {
+        setBalance(node);
+        if (node.balance == -2) {
+            if (getHeight(node.left.left) >= getHeight(node.left.right))
+                node = rotateRight(node);
+            else
+                node = bigRotateLeft(node);
+        } else if (node.balance == 2) {
+            if (getHeight(node.right.right) >= getHeight(node.right.left))
+                node = rotateLeft(node);
+            else
+                node = bigRotateRight(node);
+        }
+        if (node.parent != null) {
+            reBalance(node.parent);
+        } else {
+            root = node;
+        }
+    }
+
+    private Node<E> rotateLeft(Node<E> node) {
+        Node<E> right = node.right;
+        right.parent = node.parent;
+        node.right = right.left;
+        if (node.right != null)
+            node.right.parent = node;
+        right.left = node;
+        node.parent = right;
+        if (right.parent != null) {
+            if (right.parent.right == node) {
+                right.parent.right = right;
+            } else {
+                right.parent.left = right;
+            }
+        }
+        setBalance(node, right);
+        return right;
+    }
+
+    private Node<E> rotateRight(Node<E> node) {
+        Node<E> left = node.left;
+        left.parent = node.parent;
+        node.left = left.right;
+        if (node.left != null)
+            node.left.parent = node;
+        left.right = node;
+        node.parent = left;
+        if (left.parent != null) {
+            if (left.parent.right == node) {
+                left.parent.right = left;
+            } else {
+                left.parent.left = left;
+            }
+        }
+        setBalance(node, left);
+        return left;
+    }
+
+    private Node<E> bigRotateLeft(Node<E> node) {
+        node.left = rotateLeft(node.left);
+        return rotateRight(node);
+    }
+
+    private Node<E> bigRotateRight(Node<E> node) {
+        node.right = rotateRight(node.right);
+        return rotateLeft(node);
+    }
+
+    private int getHeight(Node<E> node) {
+        return node == null ? -1 : node.height;
+    }
+
+    @SafeVarargs
+    private final void setBalance(Node<E>... nodes) {
+        for (Node<E> n : nodes) {
+            setHeight(n);
+            n.balance = getHeight(n.right) - getHeight(n.left);
+        }
+    }
+
+    private void setHeight(Node<E> node) {
+        if (node != null) {
+            node.height = 1 + Math.max(getHeight(node.left), getHeight(node.right));
+        }
+    }
+
     @Override
     public E first() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("first");
+        if (isEmpty()) {
+            throw new NoSuchElementException("set is empty, no first element");
+        }
+        Node<E> current = root;
+        while (current.left != null) {
+            current = current.left;
+        }
+        return current.value;
     }
 
-    /**
-     * Ищет наибольший элемент в дереве
-     * @return Возвращает наибольший элемент в дереве
-     * @throws NoSuchElementException если дерево пустое
-     */
     @Override
     public E last() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("last");
+        if (isEmpty()) {
+            throw new NoSuchElementException("set is empty, no last element");
+        }
+        Node<E> current = root;
+        while (current.right != null) {
+            current = current.right;
+        }
+        return current.value;
     }
 
     private int compare(E v1, E v2) {
@@ -98,7 +265,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -140,7 +307,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         traverseTreeAndCheckBalanced(root);
     }
 
-    private int traverseTreeAndCheckBalanced(BinarySearchTree.Node curr) throws NotBalancedTreeException {
+    private int traverseTreeAndCheckBalanced(Node curr) throws NotBalancedTreeException {
         if (curr == null) {
             return 1;
         }
@@ -152,5 +319,34 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         }
         return Math.max(leftHeight, rightHeight) + 1;
     }
+
+    private static class Node<T> {
+        private T value;
+        private Node<T> left;
+        private Node<T> right;
+        private Node<T> parent;
+        private int height;
+        private int balance;
+
+        private Node(T value, Node<T> parent) {
+            this.value = value;
+            this.parent = parent;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("N{");
+            sb.append("d=").append(value);
+            if (left != null) {
+                sb.append(", l=").append(left);
+            }
+            if (right != null) {
+                sb.append(", r=").append(right);
+            }
+            sb.append('}');
+            return sb.toString();
+        }
+    }
+
 
 }
