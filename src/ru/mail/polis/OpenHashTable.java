@@ -6,11 +6,17 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-    private int size; //количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы todo: измените на array.length
+    private final int INITIAL_CAPACITY = 8;
+    private final float LOAD_FACTOR = 0.5f;
+    private OpenHashTableEntity[] table;
+    private OpenHashTableEntity deleted = (tableSize, probId) -> -1;
+    private int size;//количество элементов в хеш-таблице
+    private int tableSize; //размер хещ-таблицы
+
 
     public OpenHashTable() {
-        //todo
+        this.table = new OpenHashTableEntity[INITIAL_CAPACITY];
+        tableSize = table.length;
     }
 
     /**
@@ -22,9 +28,20 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        int probId = 0;
+        int hash = value.hashCode(getTableSize(), probId);
+
+        while (table[hash] == deleted || table[hash] != null) {
+            if(table[hash].equals(value))
+                return false;
+            hash = value.hashCode(getTableSize(), ++probId);
+        }
+        table[hash] = value;
+
+        size++;
+        if(getTableSize()*LOAD_FACTOR <= size)
+            resize(getTableSize() * 2);
+        return true;
     }
 
     /**
@@ -38,8 +55,19 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        int probId = 0;
+        int hash = value.hashCode(getTableSize(), probId);
+
+        while (table[hash] != null){
+            if(table[hash].equals(value)){
+                table[hash] = deleted;
+                size--;
+                if(getTableSize()*LOAD_FACTOR <= size*2)
+                    resize(getTableSize() * 2);
+                return true;
+            }
+            hash = value.hashCode(getTableSize(), ++probId);
+        }
         return false;
     }
 
@@ -54,9 +82,26 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean contains(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        int probId = 0;
+        int hash = value.hashCode(getTableSize(), probId);
+        while (table[hash] != null){
+            if(table[hash].equals(value)){
+                return true;
+            }
+            hash = value.hashCode(getTableSize(), ++probId);
+        }
         return false;
+    }
+
+    private void resize(int newSize){
+        OpenHashTableEntity[] oldTable = table;
+        table = new OpenHashTableEntity[newSize];
+        tableSize = table.length;
+        size = 0;
+        for (OpenHashTableEntity s: oldTable) {
+            if(s != null && s != deleted)
+                add((E)s);
+        }
     }
 
     @Override
@@ -73,4 +118,34 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (OpenHashTableEntity s: table ) {
+            if(s != null && !s.equals(deleted))
+            str.append(s.toString()).append("\n");
+        }
+        return str.toString();
+    }
+
+    public static void main(String[] args) {
+        OpenHashTable<Student> students = new OpenHashTable<>();
+
+        for(int i = 0; i < 2000; i++) {
+            Student std = SimpleStudentGenerator.getInstance().generate();
+            students.add(std);
+            if(!students.contains(std)) {
+                System.out.println(std);
+                System.out.println(students.contains(std));
+            }
+            students.add(std);
+            if(!students.contains(std)) {
+                System.out.println(std);
+                System.out.println(students.contains(std));
+            }
+            //System.out.println(students.contains(std));
+        }
+
+        //System.out.println(students.toString());
+    }
 }

@@ -10,9 +10,22 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     private final Comparator<E> comparator;
 
-    private BinarySearchTree.Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private class Node {
+        private E value;
+        private int balance;
+        private int height;
+        private Node left;
+        private Node right;
+        private Node parent;
+
+        Node(E value, Node parent) {
+            this.value = value;
+            this.parent = parent;
+        }
+    }
+
+    private Node root;
     private int size;
-    //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public AVLTree() {
         this(null);
@@ -31,23 +44,98 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        return false;
+        if (value == null) {
+            throw new NullPointerException("value is null");
+        }
+        if (root == null) {
+            root = new Node(value, null);
+        } else {
+            Node curr = root;
+            while (true) {
+                int cmp = compare(curr.value, value);
+                if (cmp == 0) {
+                    return false;
+                } else if (cmp < 0) {
+                    if (curr.right != null) {
+                        curr = curr.right;
+                    } else {
+                        curr.right = new Node(value, curr);
+                        break;
+                    }
+                } else /*if (cmp > 0)*/ {
+                    if (curr.left != null) {
+                        curr = curr.left;
+                    } else {
+                        curr.left = new Node(value, curr);
+                        break;
+                    }
+                }
+            }
+            rebalance(curr);
+        }
+        size++;
+        return true;
     }
 
     /**
      * Удаляет элемент с таким же значением из дерева.
      * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
      *
-     * @param object элемент который необходимо вставить
+     * @param object элемент который необходимо удалить
      * @return true, если элемент содержался в дереве
      */
     @Override
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
+        E value = (E)object;
+        if (root == null)
+            return false;
+
+        Node child = root;
+        while (child != null) {
+            Node node = child;
+            child = compare(value,node.value) >= 0 ? node.right : node.left;
+            if (compare(value,node.value) == 0) {
+                delete(node);
+                size--;
+                return true;
+            }
+        }
         return false;
+    }
+
+    /**
+     * Удаляет необходимый узел из дерева.
+     *
+     * @param node конкретный узел для удаления
+     */
+    private void delete(Node node) {
+        if (node.left == null && node.right == null) {
+            if (node.parent == null) {
+                root = null;
+            } else {
+                Node parent = node.parent;
+                if (parent.left == node) {
+                    parent.left = null;
+                } else {
+                    parent.right = null;
+                }
+                rebalance(parent);
+            }
+            return;
+        }
+
+        if (node.left != null) {
+            Node child = node.left;
+            while (child.right != null) child = child.right;
+            node.value = child.value;
+            delete(child);
+        } else {
+            Node child = node.right;
+            while (child.left != null) child = child.left;
+            node.value = child.value;
+            delete(child);
+        }
     }
 
     /**
@@ -59,9 +147,24 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public boolean contains(Object object) {
+        if (object == null) {
+            throw new NullPointerException("value is null");
+        }
         @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
+        E key = (E) object;
+        if (root != null) {
+            Node curr = root;
+            while (curr != null) {
+                int cmp = compare(curr.value, key);
+                if (cmp == 0) {
+                    return true;
+                } else if (cmp < 0) {
+                    curr = curr.right;
+                } else {
+                    curr = curr.left;
+                }
+            }
+        }
         return false;
     }
 
@@ -72,8 +175,14 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public E first() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("first");
+        if (isEmpty()) {
+            throw new NoSuchElementException("first");
+        }
+        Node curr = root;
+        while (curr.left != null) {
+            curr = curr.left;
+        }
+        return curr.value;
     }
 
     /**
@@ -83,8 +192,150 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public E last() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("last");
+        if (isEmpty()) {
+            throw new NoSuchElementException("last");
+        }
+        Node curr = root;
+        while (curr.right != null) {
+            curr = curr.right;
+        }
+        return curr.value;
+    }
+
+    /**
+     * Балансировка дерева, если высоты поддеревьев различаются больше чем на 1
+     * @param node элемент относительно которого балансируем дерево
+     */
+    private void rebalance(Node node) {
+        setBalance(node);
+
+        if (node.balance == -2) {
+            if (height(node.left.left) >= height(node.left.right))
+                node = rotateRight(node);
+            else
+                node = rotateLeftThenRight(node);
+
+        } else if (node.balance == 2) {
+            if (height(node.right.right) >= height(node.right.left))
+                node = rotateLeft(node);
+            else
+                node = rotateRightThenLeft(node);
+        }
+
+        if (node.parent != null) {
+            rebalance(node.parent);
+        } else {
+            root = node;
+        }
+    }
+
+    /**
+     * Малое левое вращение
+     * @param a элемент относительно которого вращаем дерево/поддерево
+     */
+    private Node rotateLeft(Node a) {
+
+        Node b = a.right;
+        b.parent = a.parent;
+
+        a.right = b.left;
+
+        if (a.right != null)
+            a.right.parent = a;
+
+        b.left = a;
+        a.parent = b;
+
+        if (b.parent != null) {
+            if (b.parent.right == a) {
+                b.parent.right = b;
+            } else {
+                b.parent.left = b;
+            }
+        }
+
+        setBalance(a);
+        setBalance(b);
+
+        return b;
+    }
+
+    /**
+     * Малое правое вращение
+     * @param a элемент относительно которого вращаем дерево/поддерево
+     */
+    private Node rotateRight(Node a) {
+
+        Node b = a.left;
+        b.parent = a.parent;
+
+        a.left = b.right;
+
+        if (a.left != null)
+            a.left.parent = a;
+
+        b.right = a;
+        a.parent = b;
+
+        if (b.parent != null) {
+            if (b.parent.right == a) {
+                b.parent.right = b;
+            } else {
+                b.parent.left = b;
+            }
+        }
+
+        setBalance(a);
+        setBalance(b);
+
+        return b;
+    }
+
+    /**
+     * Большое левое вращение. Аналог двух поворотов подряд, сперва левое, затем правое
+     * @param node элемент относительно которого вращаем дерево/поддерево
+     */
+    private Node rotateLeftThenRight(Node node) {
+        node.left = rotateLeft(node.left);
+        return rotateRight(node);
+    }
+
+    /**
+     * Большое правое вращение. Аналог двух поворотов подряд, сперва правое, затем левое
+     * @param node элемент относительно которого вращаем дерево/поддерево
+     */
+    private Node rotateRightThenLeft(Node node) {
+        node.right = rotateRight(node.right);
+        return rotateLeft(node);
+    }
+
+    /**
+     * Возвращает высоту для заданного узла
+     * @param node элемент у которого запрашиваем высоту
+     */
+    private int height(Node node) {
+        if (node == null)
+            return -1;
+        return node.height;
+    }
+
+    /**
+     * Устанавливаем новое значение balance. Таким образом определяем нужно ли балансировка
+     * @param node элемент у которого обновляем значение balance
+     */
+    private void setBalance(Node node) {
+        reheight(node);
+        node.balance = height(node.right) - height(node.left);
+    }
+
+    /**
+     * Обновление значения высоту для заданного узла
+     * @param node элемент у которого обновляем высоту
+     */
+    private void reheight(Node node) {
+        if (node != null) {
+            node.height = 1 + Math.max(height(node.left), height(node.right));
+        }
     }
 
     private int compare(E v1, E v2) {
@@ -98,7 +349,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -140,7 +391,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         traverseTreeAndCheckBalanced(root);
     }
 
-    private int traverseTreeAndCheckBalanced(BinarySearchTree.Node curr) throws NotBalancedTreeException {
+    private int traverseTreeAndCheckBalanced(Node curr) throws NotBalancedTreeException {
         if (curr == null) {
             return 1;
         }
