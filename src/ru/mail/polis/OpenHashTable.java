@@ -6,12 +6,14 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-    private int size;
-    private int tableSize;
+
+    private int size; //количество элементов в хеш-таблице
+    private int tableSize; //размер хещ-таблицы todo: измените на array.length
     private Object[] table;
     private final int INITIAL_CAPACITY = 8;
     private static final float LOAD_FACTOR = 0.5f;
     private static final Object DELETED = new Object();
+
 
     public OpenHashTable() {
         table = new Object[INITIAL_CAPACITY];
@@ -26,6 +28,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean add(E value) {
+
         if (!contains(value)) {
             for (int i = 0; i < table.length; i++) {
                 int j = value.hashCode(table.length, i);
@@ -40,6 +43,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
             resize();
             return add(value);
         } else return false;
+
     }
 
     /**
@@ -53,6 +57,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
+
         int i = search(value);
         if (table[i] == null) {
             return false;
@@ -61,6 +66,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
             size--;
             return true;
         }
+
     }
 
     /**
@@ -73,6 +79,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     @SuppressWarnings("unchecked")
     @Override
     public boolean contains(Object object) {
+
         return search((E) object) >= 0;
     }
 
@@ -109,11 +116,16 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     public int getTableSize() {
         return table.length;
+
     }
 
     @Override
     public int size() {
         return size;
+    }
+
+    public int getTableSize() {
+        return tableSize;
     }
 
     @Override

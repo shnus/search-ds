@@ -4,7 +4,8 @@ package ru.mail.polis;
  * Created by Nechaev Mikhail
  * Since 13/12/2017.
  */
-public interface OpenHashTableEntity<E> {
+
+public interface OpenHashTableEntity {
 
     /**
      * Вычисляет значение хеша объекта (другими словами значение индекса ячейки в хеш-таблице)

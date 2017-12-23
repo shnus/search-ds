@@ -36,7 +36,8 @@ public class Student extends CheckedOpenHashTableEntity {
         return 1 + Math.abs(hashCode()) % (tableSize - 1);
     }
 
-    public enum Gender {
+    public enum  Gender {
+
         MALE, FEMALE
     }
 

@@ -481,16 +481,14 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("N{");
-            sb.append("d=").append(value);
-            if (left != null) {
-                sb.append(", l=").append(left);
-            }
-            if (right != null) {
-                sb.append(", r=").append(right);
-            }
-            sb.append('}');
-            return sb.toString();
+
+            return "Node{" +
+                    "value=" + value +
+                    ", left=" + left +
+                    ", right=" + right +
+                    ", color=" + color +
+                    '}';
+
         }
     }
 }
