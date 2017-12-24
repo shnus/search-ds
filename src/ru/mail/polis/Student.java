@@ -25,10 +25,10 @@ public class Student extends CheckedOpenHashTableEntity {
 
     @Override
 
-    public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        if (probId < 0 || probId >= tableSize)
+    public int hashCode(int tableSize, int attempt) throws IllegalArgumentException {
+        if (attempt < 0 || attempt >= tableSize)
             throw new IllegalArgumentException();
-        return (Math.abs(probId * 31 + hashCode()) % tableSize);
+        return ((Math.abs(this.hashCode()) % tableSize) + (Math.abs(1 + attempt * 31 + this.hashCode()) % tableSize)) % tableSize;
     }
 
     public enum  Gender {
@@ -54,35 +54,35 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     public long getId() {
-        return id;
+        return this.id;
     }
 
     public String getFirstName() {
-        return firstName;
+        return this.firstName;
     }
 
     public String getLastName() {
-        return lastName;
+        return this.lastName;
     }
 
     public Gender getGender() {
-        return gender;
+        return this.gender;
     }
 
     public LocalDate getBirthday() {
-        return birthday;
+        return this.birthday;
     }
 
     public int getGroupId() {
-        return groupId;
+        return this.groupId;
     }
 
     public int getYearOfAdmission() {
-        return yearOfAdmission;
+        return this.yearOfAdmission;
     }
 
     public String getPhotoReference() {
-        return photoReference;
+        return this.photoReference;
     }
 
     public void setPhotoReference(String photoReference) {
@@ -90,7 +90,7 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public void setEmail(String email) {
@@ -98,7 +98,7 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     public String getMobile() {
-        return mobile;
+        return this.mobile;
     }
 
     public void setMobile(String mobile) {
@@ -112,47 +112,47 @@ public class Student extends CheckedOpenHashTableEntity {
 
         Student student = (Student) o;
 
-        if (id != student.id) return false;
-        if (groupId != student.groupId) return false;
-        if (yearOfAdmission != student.yearOfAdmission) return false;
-        if (!firstName.equals(student.firstName)) return false;
-        if (!lastName.equals(student.lastName)) return false;
-        if (gender != student.gender) return false;
-        if (!birthday.equals(student.birthday)) return false;
-        if (photoReference != null ? !photoReference.equals(student.photoReference) : student.photoReference != null)
+        if (this.id != student.id) return false;
+        if (this.groupId != student.groupId) return false;
+        if (this.yearOfAdmission != student.yearOfAdmission) return false;
+        if (!this.firstName.equals(student.firstName)) return false;
+        if (!this.lastName.equals(student.lastName)) return false;
+        if (this.gender != student.gender) return false;
+        if (!this.birthday.equals(student.birthday)) return false;
+        if (this.photoReference != null ? !photoReference.equals(student.photoReference) : student.photoReference != null)
             return false;
-        if (email != null ? !email.equals(student.email) : student.email != null) return false;
-        return mobile != null ? mobile.equals(student.mobile) : student.mobile == null;
+        if (this.email != null ? !this.email.equals(student.email) : student.email != null) return false;
+        return this.mobile != null ? this.mobile.equals(student.mobile) : student.mobile == null;
     }
 
     @Override
     public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + firstName.hashCode();
-        result = 31 * result + lastName.hashCode();
-        result = 31 * result + gender.hashCode();
-        result = 31 * result + birthday.hashCode();
-        result = 31 * result + groupId;
-        result = 31 * result + yearOfAdmission;
-        result = 31 * result + (photoReference != null ? photoReference.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (mobile != null ? mobile.hashCode() : 0);
+        int result = (int) (this.id ^ (this.id >>> 32));
+        result = 31 * result + this.firstName.hashCode();
+        result = 31 * result + this.lastName.hashCode();
+        result = 31 * result + this.gender.hashCode();
+        result = 31 * result + this.birthday.hashCode();
+        result = 31 * result + this.groupId;
+        result = 31 * result + this.yearOfAdmission;
+        result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
+        result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
+        result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "Student{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", gender=" + gender +
-                ", birthday=" + birthday +
-                ", groupId=" + groupId +
-                ", yearOfAdmission=" + yearOfAdmission +
-                ", photoReference='" + photoReference + '\'' +
-                ", email='" + email + '\'' +
-                ", mobile='" + mobile + '\'' +
+                "id=" + this.id +
+                ", firstName='" + this.firstName + '\'' +
+                ", lastName='" + this.lastName + '\'' +
+                ", gender=" + this.gender +
+                ", birthday=" + this.birthday +
+                ", groupId=" + this.groupId +
+                ", yearOfAdmission=" + this.yearOfAdmission +
+                ", photoReference='" + this.photoReference + '\'' +
+                ", email='" + this.email + '\'' +
+                ", mobile='" + this.mobile + '\'' +
                 '}';
     }
 }
