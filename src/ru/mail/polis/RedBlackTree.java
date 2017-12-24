@@ -218,7 +218,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         if (removeNode == nil || removeNode == null) {
             return false;
         }
-        Node<E> temp = nil, temp1 = nil;
+        Node<E> temp, temp1;
 
         if (removeNode.left == nil || removeNode.right == nil) {
             temp1 = removeNode;
