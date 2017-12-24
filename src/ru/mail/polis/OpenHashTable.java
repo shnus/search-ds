@@ -6,7 +6,8 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-    private int size;
+    private int size; //количество элементов в хеш-таблице
+    private int tableSize; //размер хещ-таблицы todo: измените на array.length
 
     public OpenHashTable() {
         //todo
@@ -61,6 +62,10 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     @Override
     public int size() {
         return size;
+    }
+
+    public int getTableSize() {
+        return tableSize;
     }
 
     @Override
