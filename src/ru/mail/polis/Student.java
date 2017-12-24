@@ -28,7 +28,7 @@ public class Student extends CheckedOpenHashTableEntity {
     public int hashCode(int tableSize, int attempt) throws IllegalArgumentException {
         if (attempt < 0 || attempt >= tableSize)
             throw new IllegalArgumentException();
-        return ((Math.abs(this.hashCode()) % tableSize) + (Math.abs(1 + attempt * 31 + this.hashCode()) % tableSize)) % tableSize;
+        return ((Math.abs(this.hashCode()) % tableSize) + (Math.abs(attempt * 31 + this.hashCode1()) % tableSize)) % tableSize;
     }
 
     public enum  Gender {
@@ -139,6 +139,24 @@ public class Student extends CheckedOpenHashTableEntity {
         result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
         return result;
     }
+
+    public int hashCode1() {
+        int result = (int) (this.id ^ (this.id >>> 32));
+        result = 31 * result + this.firstName.hashCode();
+        result = 31 * result + this.lastName.hashCode();
+        result = 31 * result + this.gender.hashCode();
+        result = 31 * result + this.firstName.hashCode();
+        result = 31 * result + this.lastName.hashCode();
+        result = 31 * result + this.gender.hashCode();
+        result = 31 * result + this.birthday.hashCode();
+        result = 31 * result + this.groupId;
+        result = 31 * result + this.yearOfAdmission;
+        result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
+        result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
+        result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
+        return result;
+    }
+
 
     @Override
     public String toString() {
