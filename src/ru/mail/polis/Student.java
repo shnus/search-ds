@@ -25,19 +25,20 @@ public class Student extends CheckedOpenHashTableEntity {
 
     @Override
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        return (hashCode1(tableSize) + probId * hashCode2(tableSize)) % tableSize;
+        int hash = hashCode();
+        return (hashCode1(tableSize, hash) + probId * hashCode2(tableSize, hash)) % tableSize;
     }
 
-    private int hashCode1(int tableSize) {
-        return Math.abs(hashCode()) % tableSize;
+    private int hashCode1(int tableSize, int hash) {
+        return Math.abs(hash) % tableSize;
     }
 
-    private int hashCode2(int tableSize) {
-        return 1 + Math.abs(hashCode()) % (tableSize - 1);
+    private int hashCode2(int tableSize, int hash) {
+        int result = Math.abs(hash) % (tableSize - 1);
+        return result % 2 == 1 ? result : result + 1;
     }
 
-    public enum  Gender {
-
+    public enum Gender {
         MALE, FEMALE
     }
 

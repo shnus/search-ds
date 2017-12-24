@@ -194,7 +194,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
 
     private Node<E> findNode(E node) {
         Node<E> tmp = root;
-        while (compare(tmp.value, node) != 0) {
+        while (tmp != nil && compare(tmp.value, node) != 0) {
             if (compare(node, tmp.value) < 0) {
                 tmp = tmp.left;
             } else {
@@ -218,7 +218,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         if (removeNode == nil || removeNode == null) {
             return false;
         }
-        Node<E> temp, temp1;
+        Node<E> temp = nil, temp1 = nil;
 
         if (removeNode.left == nil || removeNode.right == nil) {
             temp1 = removeNode;
@@ -481,14 +481,16 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
 
         @Override
         public String toString() {
-
-            return "Node{" +
-                    "value=" + value +
-                    ", left=" + left +
-                    ", right=" + right +
-                    ", color=" + color +
-                    '}';
-
+            final StringBuilder sb = new StringBuilder("N{");
+            sb.append("d=").append(value);
+            if (left != null) {
+                sb.append(", l=").append(left);
+            }
+            if (right != null) {
+                sb.append(", r=").append(right);
+            }
+            sb.append('}');
+            return sb.toString();
         }
     }
 }

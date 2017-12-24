@@ -4,7 +4,6 @@ package ru.mail.polis;
  * Created by Nechaev Mikhail
  * Since 13/12/2017.
  */
-
 public interface OpenHashTableEntity {
 
     /**
