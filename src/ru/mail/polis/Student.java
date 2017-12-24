@@ -24,9 +24,11 @@ public class Student extends CheckedOpenHashTableEntity {
     private String mobile; //Номер телефона
 
     @Override
+
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        //todo: реализуйте этот метод
-        return 0;
+        if (probId < 0 || probId >= tableSize)
+            throw new IllegalArgumentException();
+        return (Math.abs(probId * 31 + hashCode()) % tableSize);
     }
 
     public enum  Gender {
@@ -44,7 +46,7 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     public Student(String firstName, String lastName, Gender gender, LocalDate birthday, int groupId,
-                   int yearOfAdmission, String photoReference, String email, String mobile) {
+            int yearOfAdmission, String photoReference, String email, String mobile) {
         this(firstName, lastName, gender, birthday, groupId, yearOfAdmission);
         this.photoReference = photoReference;
         this.email = email;

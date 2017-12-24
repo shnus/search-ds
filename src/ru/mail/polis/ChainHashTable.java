@@ -9,7 +9,7 @@ import java.util.Set;
 public class ChainHashTable<E> extends AbstractSet<E> implements Set<E> {
 
     private final int INITIAL_CAPACITY = 8;
-//    private final float LOAD_FACTOR = 0.5f;
+    //    private final float LOAD_FACTOR = 0.5f;
     private Object[] table;
     private int size;
 
