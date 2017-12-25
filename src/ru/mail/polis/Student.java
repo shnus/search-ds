@@ -25,8 +25,7 @@ public class Student extends CheckedOpenHashTableEntity {
 
     @Override
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        int hash = hashCode();
-        return (hashCode1(tableSize, hash) + probId * hashCode2(tableSize, hash)) % tableSize;
+        return (hashCode1(tableSize, hashCode(31)) + probId * hashCode2(tableSize, hashCode(53))) % tableSize;
     }
 
     private int hashCode1(int tableSize, int hash) {
@@ -132,19 +131,30 @@ public class Student extends CheckedOpenHashTableEntity {
         return mobile != null ? mobile.equals(student.mobile) : student.mobile == null;
     }
 
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + firstName.hashCode();
-        result = 31 * result + lastName.hashCode();
-        result = 31 * result + gender.hashCode();
-        result = 31 * result + birthday.hashCode();
-        result = 31 * result + groupId;
-        result = 31 * result + yearOfAdmission;
-        result = 31 * result + (photoReference != null ? photoReference.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (mobile != null ? mobile.hashCode() : 0);
+
+    private int hashCode(int key) {
+        int result = (int) (id ^ (id >>> key + 1));
+        result = key * result + hashString(lastName, key);
+        result = key * result + hashString(firstName, key);
+        result = key * result + gender.hashCode();
+        result = key * result + birthday.hashCode();
+        result = key * result + groupId;
+        result = key * result + yearOfAdmission;
+        result = key * result + (photoReference != null ? hashString(photoReference, key) : 0);
+        result = key * result + (email != null ? hashString(email, key) : 0);
+        result = key * result + (mobile != null ? hashString(mobile, key) : 0);
         return result;
+    }
+
+    private int hashString(String string, int key) {
+        int h = 0;
+        char[] value = string.toCharArray();
+        if (value.length > 0) {
+            for (char aValue : value) {
+                h = key * h + aValue;
+            }
+        }
+        return h;
     }
 
     @Override
