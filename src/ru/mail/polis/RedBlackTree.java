@@ -69,7 +69,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
     @Override
     public void checkBalanced() throws NotBalancedTreeException {
         if (root != null) {
-            if (color(root) != Color.BLACK) {
+            if (root.color != Color.BLACK) {
                 throw new NotBalancedTreeException("Root must be black");
             }
             traverseTreeAndCheckBalanced(root);
@@ -77,7 +77,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
     }
 
     private int traverseTreeAndCheckBalanced(Node node) throws NotBalancedTreeException {
-        if (node.value == null) {
+        if (node == null) {
             return 1;
         }
         int leftBlackHeight = traverseTreeAndCheckBalanced(node.left);
@@ -85,7 +85,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         if (leftBlackHeight != rightBlackHeight) {
             throw NotBalancedTreeException.create("Black height must be equal.", leftBlackHeight, rightBlackHeight, node.toString());
         }
-        if (color(node) == Color.RED) {
+        if (node.color == Color.RED) {
             checkRedNodeRule(node);
             return leftBlackHeight;
         }
@@ -93,18 +93,12 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
     }
 
     private void checkRedNodeRule(Node node) throws NotBalancedTreeException {
-        if(node.value==null)
-            return;
-        if(color(node)==Color.RED) {
-            if (node.left.value != null && color(node.left) != Color.BLACK) {
-                throw new NotBalancedTreeException("If a node is red, then left child must be black.\n" + node.toString());
-            }
-            if (node.right.value != null && color(node.right) != Color.BLACK) {
-                throw new NotBalancedTreeException("If a node is red, then right child must be black.\n" + node.toString());
-            }
+        if (node.left != null && node.left.color != Color.BLACK) {
+            throw new NotBalancedTreeException("If a node is red, then left child must be black.\n" + node.toString());
         }
-        checkRedNodeRule(node.left);
-        checkRedNodeRule(node.right);
+        if (node.right != null && node.right.color != Color.BLACK) {
+            throw new NotBalancedTreeException("If a node is red, then right child must be black.\n" + node.toString());
+        }
     }
 
     class Node {

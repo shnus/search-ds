@@ -23,15 +23,25 @@ public class Student extends CheckedOpenHashTableEntity {
     private String email;
     private String mobile; //Номер телефона
 
-    @Override
+       @Override
 
     public int hashCode(int tableSize, int attempt) throws IllegalArgumentException {
         if (attempt < 0 || attempt >= tableSize)
             throw new IllegalArgumentException();
-        return ((Math.abs(this.hashCode()) % tableSize) + (Math.abs(attempt * 31 + this.hashCode1()) % tableSize)) % tableSize;
+        return (hash1(tableSize) + attempt*hash2(tableSize)) % tableSize;
     }
 
+    public int hash1(int tableSize){
+        return (Math.abs(this.hashCode()) % tableSize);
+    }
+    public int hash2(int tableSize){
+        int temp = Math.abs(this.hashCode()) % (tableSize-1);
+        if(temp%2 == 1)
+            return temp;
+        return temp+1;
+    }
     public enum  Gender {
+
         MALE, FEMALE
     }
 
@@ -139,24 +149,6 @@ public class Student extends CheckedOpenHashTableEntity {
         result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
         return result;
     }
-
-    public int hashCode1() {
-        int result = (int) (this.id ^ (this.id >>> 32));
-        result = 31 * result + this.firstName.hashCode();
-        result = 31 * result + this.lastName.hashCode();
-        result = 31 * result + this.gender.hashCode();
-        result = 31 * result + this.firstName.hashCode();
-        result = 31 * result + this.lastName.hashCode();
-        result = 31 * result + this.gender.hashCode();
-        result = 31 * result + this.birthday.hashCode();
-        result = 31 * result + this.groupId;
-        result = 31 * result + this.yearOfAdmission;
-        result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
-        result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
-        result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
-        return result;
-    }
-
 
     @Override
     public String toString() {
