@@ -6,11 +6,14 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-    private int size; //количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы todo: измените на array.length
+    private int size;
+    private Object[] table;
+    private final int INITIAL_CAPACITY = 8;
+    private static final float LOAD_FACTOR = 0.5f;
+    private static final Object DELETED = new Object();
 
     public OpenHashTable() {
-        //todo
+        table = new Object[INITIAL_CAPACITY];
     }
 
     /**
@@ -22,9 +25,18 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        if (!contains(value)) {
+            for (int i = 0; i < table.length; i++) {
+                int j = value.hashCode(table.length, i);
+                if (table[j] == null || table[j] == DELETED) {
+                    table[j] = value;
+                    size++;
+                    resize();
+                    return true;
+                }
+            }
+            return add(value);
+        } else return false;
     }
 
     /**
@@ -38,9 +50,14 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        int i = search(value);
+        if (i < 0 || table[i] == null) {
+            return false;
+        } else {
+            table[i] = DELETED;
+            size--;
+            return true;
+        }
     }
 
     /**
@@ -50,13 +67,45 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      * @param object элемент который необходимо поискать
      * @return true, если такой элемент содержится в хеш-таблице
      */
+    @SuppressWarnings("unchecked")
     @Override
     public boolean contains(Object object) {
-        @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        return search((E) object) >= 0;
+    }
+
+    private int search(E value) {
+        int j;
+        for (int i = 0; i < table.length; i++) {
+            j = value.hashCode(table.length, i);
+            if (table[j] != DELETED && table[j] == value) {
+                return j;
+            }
+        }
+        return -1;
+    }
+
+    private boolean isResize() {
+        return size - table.length * LOAD_FACTOR >= 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void resize() {
+        if (isResize()) {
+            Object[] old = this.table;
+            size = 0;
+            table = new Object[table.length << 1];
+            for (int i = 0; i < old.length; i++) {
+                E value = (E) old[i];
+                if (value != null && value != DELETED) {
+                    add(value);
+                    old[i] = null;
+                }
+            }
+        }
+    }
+
+    public int getTableSize() {
+        return table.length;
     }
 
     @Override
@@ -64,13 +113,8 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
         return size;
     }
 
-    public int getTableSize() {
-        return tableSize;
-    }
-
     @Override
     public Iterator<E> iterator() {
         throw new UnsupportedOperationException();
     }
-
 }

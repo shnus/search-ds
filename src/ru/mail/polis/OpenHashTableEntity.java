@@ -1,10 +1,5 @@
 package ru.mail.polis;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 /**
  * Created by Nechaev Mikhail
  * Since 13/12/2017.
