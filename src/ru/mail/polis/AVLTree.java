@@ -63,7 +63,12 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         }
         size++;
         Node temp=root;
-        checkBalanced();
+        makeBalanced();
+        try {
+            checkBalanced();
+        } catch (NotBalancedTreeException e) {
+            e.printStackTrace();
+        }
         return true;
 
     }
@@ -126,7 +131,12 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             }
         }
         size--;
-        checkBalanced();
+        makeBalanced();
+        try {
+            checkBalanced();
+        } catch (NotBalancedTreeException e) {
+            e.printStackTrace();
+        }
         return true;
     }
 
@@ -263,27 +273,36 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      * @throws NotBalancedTreeException если высоты отличаются более чем на один
      */
     @Override
-    public void checkBalanced() {
-        reHeight(root);
-        traverseTreeAndCheckBalanced(null, root, 0);
+    public void checkBalanced() throws NotBalancedTreeException {
+        traverseTreeAndCheckBalanced(root);
     }
 
-    private void traverseTreeAndCheckBalanced(Node parent, Node curr, int a){
+    private int traverseTreeAndCheckBalanced(Node curr) throws NotBalancedTreeException {
+        if (curr == null) {
+            return 1;
+        }
+        int leftHeight = traverseTreeAndCheckBalanced(curr.left);
+        int rightHeight = traverseTreeAndCheckBalanced(curr.right);
+        if (Math.abs(leftHeight - rightHeight) > 1) {
+            throw NotBalancedTreeException.create("The heights of the two child subtrees of any node must be differ by at most one",
+                    leftHeight, rightHeight, curr.toString());
+        }
+        return Math.max(leftHeight, rightHeight) + 1;
+    }
+
+
+    public void makeBalanced() {
+        reHeight(root);
+        traverseTreeAndFixBalanced(null, root, 0);
+    }
+
+    private void traverseTreeAndFixBalanced(Node parent, Node curr, int a){
         if (curr == null) {
             return;
         }
 
-        if (curr.left!=null&&curr.right!=null)
-        if ((curr.right.height - curr.left.height > 1) && (curr.right.leftHeight <= curr.right.rightHeight)){
-            Node temp = turnRightSmall(curr);
-            if(a==1)
-                parent.right=temp;
-            if(a==-1)
-                parent.left=temp;
-            if(a==0)
-                root=temp;
-            reHeight(root);
-        } else if((curr.left.height - curr.right.height > 1) && (curr.left.rightHeight <= curr.left.leftHeight)){
+        //if (curr.left!=null&&curr.right!=null)
+        if ((height(curr.right) - height(curr.left) > 1) && (leftHeight(curr.right) <= rightHeight(curr.right))){
             Node temp = turnLeftSmall(curr);
             if(a==1)
                 parent.right=temp;
@@ -292,7 +311,18 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             if(a==0)
                 root=temp;
             reHeight(root);
-        } else if((curr.right.height - curr.left.height > 1) && (curr.right.leftHeight > curr.right.rightHeight)) {
+            makeBalanced();
+        } else if((height(curr.left) - height(curr.right) > 1) && (rightHeight(curr.left) <= leftHeight(curr.left))){
+            Node temp = turnRightSmall(curr);
+            if(a==1)
+                parent.right=temp;
+            if(a==-1)
+                parent.left=temp;
+            if(a==0)
+                root=temp;
+            reHeight(root);
+            makeBalanced();
+        } else if((height(curr.right) - height(curr.left) > 1) && (leftHeight(curr.right) > rightHeight(curr.right))) {
             Node temp = turnLeftBig(curr);
             if(a==1)
                 parent.right=temp;
@@ -301,7 +331,8 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             if(a==0)
                 root=temp;
             reHeight(root);
-        } else if((curr.left.height - curr.right.height > 1) && (curr.left.rightHeight <= curr.left.leftHeight)) {
+            makeBalanced();
+        } else if((height(curr.left) - height(curr.right) > 1) && (rightHeight(curr.left) > leftHeight(curr.left))) {
             Node temp = turnRightBig(curr);
             if(a==1)
                 parent.right=temp;
@@ -310,13 +341,31 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             if(a==0)
                 root=temp;
             reHeight(root);
+            makeBalanced();
         }
 
-        traverseTreeAndCheckBalanced(curr, curr.left, -1);
-        traverseTreeAndCheckBalanced(curr, curr.right, 1);
+        traverseTreeAndFixBalanced(curr, curr.left, -1);
+        traverseTreeAndFixBalanced(curr, curr.right, 1);
         return;
     }
 
+    private int leftHeight(Node node) {
+        if (node==null)
+            return 0;
+        else return node.leftHeight;
+    }
+
+    private int rightHeight(Node node) {
+        if (node==null)
+            return 0;
+        else return node.rightHeight;
+    }
+
+    private int height(Node node) {
+        if (node==null)
+            return 0;
+        else return node.height;
+    }
 
 
     private int reHeight(Node curr) {
@@ -416,18 +465,27 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     public static void main(String[] args) {
         AVLTree<Integer> tree = new AVLTree<>();
-        tree.add(10);
-        tree.add(5);
-        tree.add(15);
-        System.out.println(tree);
-        tree.remove(10);
-        tree.remove(15);
-        System.out.println(tree);
-        tree.remove(5);
-        System.out.println(tree);
+//        tree.add(0);
+//        tree.add(1);
+//        tree.add(2);
+//        tree.add(10);
+//        tree.add(5);
+//        tree.add(15);
+//        System.out.println(tree);
+//        tree.remove(10);
+//        tree.remove(15);
+//        System.out.println(tree);
+//        tree.remove(5);
+//        System.out.println(tree);
         Random random = new Random(100);
+        int temp;
         for (int i = 0; i < 1000; i++) {
-            tree.add(random.nextInt());
+            temp=random.nextInt(1000);
+            if (temp == 215) {
+                System.out.println();
+            }
+            tree.add(temp);
+            System.out.println(temp);
         }
         tree.add(7);
         tree.add(2);
@@ -445,7 +503,10 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         tree.add(71);
         tree.add(73);
         System.out.println(tree);
+        tree.remove(7);
+        tree.remove(68);
         //tree.turnLeftSmall();
+        tree.remove(487);
         System.out.println(tree.root.toString());
     }
 
