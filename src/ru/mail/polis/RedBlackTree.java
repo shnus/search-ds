@@ -9,9 +9,9 @@ import java.util.SortedSet;
 public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implements BalancedSortedSet<E> {
 
     private final Comparator<E> comparator;
-    private Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private final Node nullNode = new Node(null);
+    private Node root = nullNode;
     private int size;
-    //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public RedBlackTree() {
         this(null);
@@ -29,8 +29,133 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        return false;
+        if (root == nullNode) {
+            root = new Node(value);
+            root.color = Color.BLACK;
+            root.parent = nullNode;
+        } else {
+            Node temp = root;
+            Node node = new Node(value);
+            node.color = Color.RED;
+            while (true) {
+                int cmp = compare(node.value,temp.value);
+                if (cmp < 0) {
+                    if (temp.left == nullNode) {
+                        temp.left = node;
+                        node.parent = temp;
+                        break;
+                    } else {
+                        temp = temp.left;
+                    }
+                } else if (cmp > 0) {
+                    if (temp.right == nullNode) {
+                        temp.right = node;
+                        node.parent = temp;
+                        break;
+                    } else {
+                        temp = temp.right;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            balance(node);
+
+        }
+        size++;
+        return true;
+    }
+
+    private void balance(Node node) {
+        while (node.parent.color == Color.RED) {
+            Node uncle = nullNode;
+            Node grand = node.parent.parent;
+            Node parent = node.parent;
+            if (parent != grand.left) {
+                uncle = grand.left;
+                if (uncle != nullNode && uncle.color == Color.RED) {
+                    parent.color = Color.BLACK;
+                    uncle.color = Color.BLACK;
+                    grand.color = Color.RED;
+                    node = grand;
+                    continue;
+                }
+                if (node == parent.left) {
+                    node = parent;
+                    rotateright(node);
+                }
+                node.parent.color = Color.BLACK;
+                node.parent.parent.color = Color.RED;
+                rotateleft(node.parent.parent);
+            } else {
+                uncle = grand.right;
+                if (uncle != nullNode && uncle.color == Color.RED) {
+                    parent.color = Color.BLACK;
+                    uncle.color = Color.BLACK;
+                    grand.color = Color.RED;
+                    node = grand;
+                    continue;
+                }
+                if (node == parent.right) {
+                    node = parent;
+                    rotateleft(node);
+                }
+                node.parent.color = Color.BLACK;
+                node.parent.parent.color = Color.RED;
+                rotateright(node.parent.parent);
+            }
+        }
+        root.color = Color.BLACK;
+    }
+
+    private void rotateleft(Node node) {
+        if (node.parent != nullNode) {
+            if (node == node.parent.left) {
+                node.parent.left = node.right;
+            } else {
+                node.parent.right = node.right;
+            }
+            node.right.parent = node.parent;
+            node.parent = node.right;
+            if (node.right.left != nullNode) {
+                node.right.left.parent = node;
+            }
+            node.right = node.right.left;
+            node.parent.left = node;
+        } else {
+            Node right = root.right;
+            root.right = right.left;
+            right.left.parent = root;
+            root.parent = right;
+            right.left = root;
+            right.parent = nullNode;
+            root = right;
+        }
+    }
+
+    private void rotateright(Node node) {
+        if (node.parent != nullNode) {
+            if (node == node.parent.left) {
+                node.parent.left = node.left;
+            } else {
+                node.parent.right = node.left;
+            }
+            node.left.parent = node.parent;
+            node.parent = node.left;
+            if (node.left.right != nullNode) {
+                node.left.right.parent = node;
+            }
+            node.left = node.left.right;
+            node.parent.right = node;
+        } else {
+            Node left = root.left;
+            root.left = root.left.right;
+            left.right.parent = root;
+            root.parent = left;
+            left.right = root;
+            left.parent = nullNode;
+            root = left;
+        }
     }
 
     /**
@@ -42,12 +167,107 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public boolean remove(Object object) {
-        @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
-        return false;
+        Node current, p;
+        if((current = findNode(new Node((E)object), root))==null) return false;
+        Node temp = current;
+        Color color = temp.color;
+
+        if (current.left == nullNode) {
+            p = current.right;
+            transplant(current, current.right);
+        } else if (current.right == nullNode){
+            p = current.left;
+            transplant(current, current.left);
+        } else {
+            temp = minNode(current.right);
+            color = temp.color;
+            p = temp.right;
+            if(temp.parent == current)
+                p.parent = temp;
+            else {
+                transplant(temp, temp.right);
+                temp.right = current.right;
+                temp.right.parent = temp;
+            }
+            transplant(current, temp);
+            temp.left = current.left;
+            temp.left.parent = temp;
+            temp.color = current.color;
+        }
+        if (color == Color.BLACK)
+            rembalance(p);
+        size--;
+        return true;
     }
 
+    private void transplant(Node target, Node with){
+        if(target.parent == nullNode){
+            root = with;
+        }else if(target == target.parent.left){
+            target.parent.left = with;
+        }else
+            target.parent.right = with;
+        with.parent = target.parent;
+    }
+
+    private void rembalance(Node p){
+        while (p!=root && p.color == Color.BLACK) {
+            if (p == p.parent.left) {
+                Node q = p.parent.right;
+                if (q.color == Color.RED) {
+                    q.color = Color.BLACK;
+                    p.parent.color = Color.RED;
+                    rotateleft(p.parent);
+                    q = p.parent.right;
+                }
+                if (q.left.color == Color.BLACK && q.right.color == Color.BLACK) {
+                    q.color = Color.RED;
+                    p = p.parent;
+                    continue;
+                }
+                else if (q.right.color == Color.BLACK) {
+                    q.left.color = Color.BLACK;
+                    q.color = Color.RED;
+                    rotateright(q);
+                    q = p.parent.right;
+                }
+                if (q.right.color == Color.RED) {
+                    q.color = p.parent.color;
+                    p.parent.color = Color.BLACK;
+                    q.right.color = Color.BLACK;
+                    rotateleft(p.parent);
+                    p = root;
+                }
+            } else {
+                Node q = p.parent.left;
+                if (q.color == Color.RED) {
+                    q.color = Color.BLACK;
+                    p.parent.color = Color.RED;
+                    rotateright(p.parent);
+                    q = p.parent.left;
+                }
+                if(q.right.color == Color.BLACK && q.left.color == Color.BLACK){
+                    q.color = Color.RED;
+                    p = p.parent;
+                    continue;
+                }
+                else if(q.left.color == Color.BLACK){
+                    q.right.color = Color.BLACK;
+                    q.color = Color.RED;
+                    rotateleft(q);
+                    q = p.parent.left;
+                }
+                if(q.left.color == Color.RED){
+                    q.color = p.parent.color;
+                    p.parent.color = Color.BLACK;
+                    q.left.color = Color.BLACK;
+                    rotateright(p.parent);
+                    p = root;
+                }
+            }
+        }
+        p.color = Color.BLACK;
+    }
     /**
      * Ищет элемент с таким же значением в дереве.
      * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
@@ -57,12 +277,53 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public boolean contains(Object object) {
+        if (object == null) {
+            throw new NullPointerException("value is null");
+        }
         @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
+        E key = (E) object;
+        if (root != null) {
+            Node curr = root;
+            while (curr.value != null) {
+                int cmp = compare(curr.value, key);
+                if (cmp == 0) {
+                    return true;
+                } else if (cmp < 0) {
+                    curr = curr.right;
+                } else {
+                    curr = curr.left;
+                }
+            }
+        }
         return false;
     }
 
+    /**
+     * Ищет элемент с таким же значением в дереве.
+     * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
+     *
+     * @param findNode элемент который необходимо поискать
+     * @param node элемент с которым сравниваем, для продвижения по дереву
+     * @return в отличие от contains возвращает целый Node, а не только значение
+     */
+    private Node findNode(Node findNode, Node node) {
+        if (root == nullNode) {
+            return null;
+        }
+
+        if (compare(findNode.value,node.value) < 0) {
+            if (node.left != nullNode) {
+                return findNode(findNode, node.left);
+            }
+        } else if (compare(findNode.value,node.value) > 0) {
+            if (node.right != nullNode) {
+                return findNode(findNode, node.right);
+            }
+        } else if (compare(findNode.value,node.value) == 0) {
+            return node;
+        }
+        return null;
+    }
     /**
      * Ищет наименьший элемент в дереве
      * @return Возвращает наименьший элемент в дереве
@@ -70,10 +331,27 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public E first() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("first");
+        if (isEmpty()) {
+            throw new NoSuchElementException("first");
+        }
+        Node curr = root;
+        while (curr.left != nullNode) {
+            curr = curr.left;
+        }
+        return curr.value;
     }
-
+    /**
+     * Ищет наименьший элемент в поддереве
+     * @param subTreeRoot начальный элемент поддерева
+     * @return в отличие от contains возвращает целый Node, а не только значение
+     * @throws NoSuchElementException если дерево пустое
+     */
+    private Node minNode(Node subTreeRoot){
+        while(subTreeRoot.left!= nullNode){
+            subTreeRoot = subTreeRoot.left;
+        }
+        return subTreeRoot;
+    }
     /**
      * Ищет наибольший элемент в дереве
      * @return Возвращает наибольший элемент в дереве
@@ -81,8 +359,14 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public E last() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("last");
+        if (isEmpty()) {
+            throw new NoSuchElementException("last");
+        }
+        Node curr = root;
+        while (curr.right != nullNode) {
+            curr = curr.right;
+        }
+        return curr.value;
     }
 
     private int compare(E v1, E v2) {
@@ -94,9 +378,13 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         return comparator;
     }
 
+    /**
+     * Returns the number of key-value pairs in this symbol table.
+     * @return the number of key-value pairs in this symbol table
+     */
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -175,12 +463,14 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         RED, BLACK
     }
 
-    static final class Node<E> {
+    private class Node {
         E value;
-        Node<E> left;
-        Node<E> right;
-        Node<E> parent;
         Color color = Color.BLACK;
+        Node left = nullNode, right = nullNode, parent = nullNode;
+
+        Node(E value) {
+            this.value = value;
+        }
 
         @Override
         public String toString() {
