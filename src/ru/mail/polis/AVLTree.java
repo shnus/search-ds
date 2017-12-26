@@ -11,9 +11,8 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     private final Comparator<E> comparator;
 
-    private Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private Node root;
     private int size;
-    //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public AVLTree() {
         this(null);
@@ -62,13 +61,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             }
         }
         size++;
-        Node temp=root;
         makeBalanced();
-        try {
-            checkBalanced();
-        } catch (NotBalancedTreeException e) {
-            e.printStackTrace();
-        }
         return true;
 
     }
@@ -132,11 +125,6 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         }
         size--;
         makeBalanced();
-        try {
-            checkBalanced();
-        } catch (NotBalancedTreeException e) {
-            e.printStackTrace();
-        }
         return true;
     }
 
@@ -208,7 +196,6 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public E last() {
-        //todo: следует реализовать
         // тупо идти направо
         Node node = this.root;
         if(node==null)
@@ -301,7 +288,6 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
             return;
         }
 
-        //if (curr.left!=null&&curr.right!=null)
         if ((height(curr.right) - height(curr.left) > 1) && (leftHeight(curr.right) <= rightHeight(curr.right))){
             Node temp = turnLeftSmall(curr);
             if(a==1)

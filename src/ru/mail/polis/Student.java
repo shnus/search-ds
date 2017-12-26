@@ -34,14 +34,15 @@ public class Student extends CheckedOpenHashTableEntity {
     public int hash1(int tableSize){
         return (Math.abs(this.hashCode()) % tableSize);
     }
+
     public int hash2(int tableSize){
-        int temp = Math.abs(this.hashCode()) % (tableSize-1);
+        int temp = Math.abs(this.hashCode1()) % (tableSize-1);
         if(temp%2 == 1)
             return temp;
         return temp+1;
     }
-    public enum  Gender {
 
+    public enum  Gender {
         MALE, FEMALE
     }
 
@@ -147,6 +148,21 @@ public class Student extends CheckedOpenHashTableEntity {
         result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
         result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
         result = 31 * result + (this.mobile != null ? this.mobile.hashCode() : 0);
+        return result;
+    }
+
+    public int hashCode1() {
+        int result;
+        result = (this.mobile != null ? this.mobile.hashCode() : 0);
+        result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
+        result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
+        result = 31 * result + this.yearOfAdmission;
+        result = 31 * result + this.groupId;
+        result = 31 * result + this.birthday.hashCode();
+        result = 31 * result + this.gender.hashCode();
+        result = 31 * result + this.lastName.hashCode();
+        result = 31 * result + this.firstName.hashCode();
+        result = 31 * result + (int) (this.id ^ (this.id >>> 32));
         return result;
     }
 

@@ -267,11 +267,6 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
             fix(node);
         }
         size++;
-        try {
-            checkBalanced();
-        } catch (NotBalancedTreeException e) {
-            e.printStackTrace();
-        }
         return true;
     }
 
@@ -396,18 +391,8 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
             if(curr!=null) {
                 Delete(curr);
                 size--;
-                try {
-                    checkBalanced();
-                } catch (NotBalancedTreeException e) {
-                    e.printStackTrace();
-                }
                 return true;
             }
-        }
-        try {
-            checkBalanced();
-        } catch (NotBalancedTreeException e) {
-            e.printStackTrace();
         }
         return false;
     }
