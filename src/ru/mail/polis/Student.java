@@ -156,8 +156,6 @@ public class Student extends CheckedOpenHashTableEntity {
         result = (this.mobile != null ? this.mobile.hashCode() : 0);
         result = 31 * result + (this.email != null ? this.email.hashCode() : 0);
         result = 31 * result + (this.photoReference != null ? this.photoReference.hashCode() : 0);
-        result = 31 * result + this.yearOfAdmission;
-        result = 31 * result + this.groupId;
         result = 31 * result + this.birthday.hashCode();
         result = 31 * result + this.gender.hashCode();
         result = 31 * result + this.lastName.hashCode();
