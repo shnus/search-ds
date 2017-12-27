@@ -31,7 +31,7 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     private int doubleHash(int tableSize){
-        return 31;
+        return (int)(id >>> 32)%(tableSize-1) + 1;
     }
 
     public enum  Gender {
