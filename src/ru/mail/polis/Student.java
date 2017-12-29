@@ -9,8 +9,6 @@ import java.time.LocalDate;
 public class Student extends CheckedOpenHashTableEntity {
 
     private static int counter = 0;
-    private static int first_simple = 23;
-    private static int second_simple = 29;
 
     //NotNullable поля
     private long id; //Уникальный идентификатор студента
@@ -150,14 +148,6 @@ public class Student extends CheckedOpenHashTableEntity {
         result = 31 * result + (photoReference != null ? photoReference.hashCode() : 0);
         result = 31 * result + (email != null ? email.hashCode() : 0);
         result = 31 * result + (mobile != null ? mobile.hashCode() : 0);
-        return result;
-    }
-
-    public long hashCode1() {
-        long result = firstName.hashCode()  + (lastName.hashCode() << 8) + (gender.hashCode() << 16) + (birthday.hashCode() << 24);
-        result *= 73837;
-        result += ((groupId + yearOfAdmission << 8 + (photoReference != null ? photoReference.hashCode() : 0) << 16 + (email != null ? email.hashCode() : 0) <<24) * 73837);
-        result += ((mobile != null ? mobile.hashCode() : 0) * 73837);
         return result;
     }
 
