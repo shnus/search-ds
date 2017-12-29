@@ -35,7 +35,17 @@ public class Student extends CheckedOpenHashTableEntity {
     }
 
     public int hash2(int tableSize){
-        return 2*(Math.abs(this.hashCode()) % (tableSize-3)) + 1;
+        return 2*(Math.abs(this.hashCode1()) % (tableSize-3)) + 1;
+    }
+
+    public int hashCode1() {
+        long result = (firstName.hashCode()  + (lastName.hashCode() << 8)
+                + (gender.hashCode() << 16) + (birthday.hashCode() << 24)) * 73837;
+        result += ((groupId + yearOfAdmission << 8
+                + (photoReference != null ? photoReference.hashCode() : 0) << 16
+                + (email != null ? email.hashCode() : 0) <<24) * 73837);
+        result += ((mobile != null ? mobile.hashCode() : 0) * 73837);
+        return (int)result;
     }
 
     private int doubleHash(int tableSize){

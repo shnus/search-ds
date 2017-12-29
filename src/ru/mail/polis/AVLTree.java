@@ -177,7 +177,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
     {
         if (p.left == null)
             return p;
-        return p.left;
+        return findmin(p.left);
     }
 
     AVLNode removemin(AVLNode p) // удаление узла с минимальным ключом из дерева p
