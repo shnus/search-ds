@@ -223,13 +223,13 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         return balance(p);
     }
 
-        /**
-         * Ищет элемент с таким же значением в дереве.
-         * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
-         *
-         * @param object элемент который необходимо поискать
-         * @return true, если такой элемент содержится в дереве
-         */
+    /**
+     * Ищет элемент с таким же значением в дереве.
+     * Инвариант: на вход всегда приходит NotNull объект, который имеет корректный тип
+     *
+     * @param object элемент который необходимо поискать
+     * @return true, если такой элемент содержится в дереве
+     */
     @Override
     public boolean contains(Object value) {
         if (value == null) {

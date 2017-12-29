@@ -29,7 +29,15 @@ public class Student extends CheckedOpenHashTableEntity {
     public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
         if (probId < 0 || probId >= tableSize)
             throw new IllegalArgumentException();
-        return (Math.abs(probId * 31 + hashCode()) % tableSize);
+        return (hash1(tableSize) + probId*hash2(tableSize)) % tableSize;
+    }
+
+    public int hash1(int tableSize){
+        return (Math.abs(2*this.hashCode()) % tableSize);
+    }
+
+    public int hash2(int tableSize){
+        return 2*(Math.abs(this.hashCode()) % (tableSize-3)) + 1;
     }
 
     private int doubleHash(int tableSize){

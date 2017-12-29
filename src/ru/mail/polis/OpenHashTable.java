@@ -6,17 +6,17 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
-    private final int INITIAL_CAPACITY = 8;
+    private int size; //количество элементов в хеш-таблице
+    private int tableSize; //размер хе-таблицы
+    private final int INIT_SIZE = 8;
     private final float LOAD_FACTOR = 0.5f;
+    private final OpenHashTableEntity ITWAS = (tableSize, probId) -> -1;
     private OpenHashTableEntity[] table;
-    private OpenHashTableEntity deleted = (tableSize, probId) -> -1;
-    private int size;//количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы
 
 
     public OpenHashTable() {
-        this.table = new OpenHashTableEntity[INITIAL_CAPACITY];
-        tableSize = table.length;
+        this.table = new OpenHashTableEntity[this.INIT_SIZE];
+        this.tableSize = this.table.length;
     }
 
     /**
@@ -30,17 +30,15 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean add(E value) {
         int probId = 0;
         int hash = value.hashCode(getTableSize(), probId);
-
-        while (table[hash] == deleted || table[hash] != null) {
-            if(table[hash].equals(value))
+        while (table[hash] == ITWAS || table[hash] != null) {
+            if(this.table[hash].equals(value))
                 return false;
-            hash = value.hashCode(getTableSize(), ++probId);
+            hash = value.hashCode(getTableSize(), probId++);
         }
         table[hash] = value;
-
         size++;
-        if(getTableSize()*LOAD_FACTOR <= size)
-            resize(getTableSize() * 2);
+        if(tableSize * LOAD_FACTOR <= this.size)
+            resize(tableSize);
         return true;
     }
 
@@ -56,17 +54,16 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
-        int hash = value.hashCode(getTableSize(), probId);
-
+        int hash = value.hashCode(this.tableSize, probId);
         while (table[hash] != null){
             if(table[hash].equals(value)){
-                table[hash] = deleted;
+                table[hash] = ITWAS;
                 size--;
-                if(getTableSize()*LOAD_FACTOR <= size*2)
-                    resize(getTableSize() * 2);
+                if(tableSize * LOAD_FACTOR <= 2 * size)
+                    resize(tableSize);
                 return true;
             }
-            hash = value.hashCode(getTableSize(), ++probId);
+            hash = value.hashCode(tableSize, probId++);
         }
         return false;
     }
@@ -80,37 +77,36 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean contains(Object object) {
-        @SuppressWarnings("unchecked")
+        int hash;
         E value = (E) object;
-        int probId = 0;
-        int hash = value.hashCode(getTableSize(), probId);
-        while (table[hash] != null){
-            if(table[hash].equals(value)){
-                return true;
+        for (int probId = 0; probId < table.length; probId++) {
+            hash = value.hashCode(table.length, probId);
+            if (table[hash] != ITWAS && table[hash] != null) {
+                if(table[hash].equals(value))
+                    return true;
             }
-            hash = value.hashCode(getTableSize(), ++probId);
         }
         return false;
     }
 
-    private void resize(int newSize){
-        OpenHashTableEntity[] oldTable = table;
-        table = new OpenHashTableEntity[newSize];
-        tableSize = table.length;
-        size = 0;
-        for (OpenHashTableEntity s: oldTable) {
-            if(s != null && s != deleted)
-                add((E)s);
-        }
-    }
-
     @Override
     public int size() {
-        return size;
+        return this.size;
     }
 
-    public int getTableSize() {
-        return tableSize;
+    public boolean isEmpty() {
+        return this.size == 0;
+    }
+
+    private void resize(int newSize){
+        OpenHashTableEntity[] temp = table;
+        table = new OpenHashTableEntity[2 * newSize];
+        tableSize = table.length;
+        size = 0;
+        for (OpenHashTableEntity elem: temp) {
+            if(elem != null && elem != ITWAS)
+                add((E) elem);
+        }
     }
 
     @Override
@@ -121,10 +117,14 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for (OpenHashTableEntity s: table ) {
-            if(s != null && !s.equals(deleted))
-                str.append(s.toString()).append("\n");
+        for (OpenHashTableEntity elem: table ) {
+            if(elem != null && elem != ITWAS)
+                str.append(elem.toString()).append("\n");
         }
         return str.toString();
+    }
+
+    public int getTableSize() {
+        return this.tableSize;
     }
 }
