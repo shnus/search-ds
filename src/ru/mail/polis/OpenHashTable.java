@@ -7,10 +7,16 @@ import java.util.Set;
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
     private int size; //количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы todo: измените на array.length
+    private int tableSize; //размер хе-таблицы
+    private final int INIT_SIZE = 8;
+    private final float LOAD_FACTOR = 0.5f;
+    private final OpenHashTableEntity ITWAS = (tableSize, probId) -> -1;
+    private OpenHashTableEntity[] table;
+
 
     public OpenHashTable() {
-        //todo
+        this.table = new OpenHashTableEntity[this.INIT_SIZE];
+        this.tableSize = this.table.length;
     }
 
     /**
@@ -22,9 +28,18 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        int probId = 0;
+        int hash = value.hashCode(getTableSize(), probId);
+        while (table[hash] == ITWAS || table[hash] != null) {
+            if(this.table[hash].equals(value))
+                return false;
+            hash = value.hashCode(getTableSize(), probId++);
+        }
+        table[hash] = value;
+        size++;
+        if(tableSize * LOAD_FACTOR <= this.size)
+            resize(tableSize);
+        return true;
     }
 
     /**
@@ -38,8 +53,18 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        int probId = 0;
+        int hash = value.hashCode(this.tableSize, probId);
+        while (table[hash] != null){
+            if(table[hash].equals(value)){
+                table[hash] = ITWAS;
+                size--;
+                if(tableSize * LOAD_FACTOR <= 2 * size)
+                    resize(tableSize);
+                return true;
+            }
+            hash = value.hashCode(tableSize, probId++);
+        }
         return false;
     }
 
@@ -52,20 +77,36 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean contains(Object object) {
-        @SuppressWarnings("unchecked")
+        int hash;
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        for (int probId = 0; probId < table.length; probId++) {
+            hash = value.hashCode(table.length, probId);
+            if (table[hash] != ITWAS && table[hash] != null) {
+                if(table[hash].equals(value))
+                    return true;
+            }
+        }
         return false;
     }
 
     @Override
     public int size() {
-        return size;
+        return this.size;
     }
 
-    public int getTableSize() {
-        return tableSize;
+    public boolean isEmpty() {
+        return this.size == 0;
+    }
+
+    private void resize(int newSize){
+        OpenHashTableEntity[] temp = table;
+        table = new OpenHashTableEntity[2 * newSize];
+        tableSize = table.length;
+        size = 0;
+        for (OpenHashTableEntity elem: temp) {
+            if(elem != null && elem != ITWAS)
+                add((E) elem);
+        }
     }
 
     @Override
@@ -73,4 +114,17 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        for (OpenHashTableEntity elem: table ) {
+            if(elem != null && elem != ITWAS)
+                str.append(elem.toString()).append("\n");
+        }
+        return str.toString();
+    }
+
+    public int getTableSize() {
+        return this.tableSize;
+    }
 }
