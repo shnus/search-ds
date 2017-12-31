@@ -1,21 +1,19 @@
 package ru.mail.polis;
 
-import java.util.AbstractSet;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.SortedSet;
+import java.util.*;
 
 public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implements BalancedSortedSet<E> {
 
     private final Comparator<E> comparator;
-    private Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private final Node nil = new Node(null);
+    private Node root = nil; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
     private int size;
     //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public RedBlackTree() {
         this(null);
     }
+
     public RedBlackTree(Comparator<E> comparator) {
         this.comparator = comparator;
     }
@@ -29,8 +27,44 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        return false;
+        Node curr = root;
+        Node nodeToInsert = new Node(value);
+
+        if (root == nil) {
+            root = nodeToInsert;
+        } else {
+            nodeToInsert.color = Color.RED;
+
+            while (true) {
+                int cmp = compare(value, curr.value);
+
+                if (cmp < 0) {
+                    if (curr.left != nil) {
+                        curr = curr.left;
+                    } else {
+                        curr.left = nodeToInsert;
+                        nodeToInsert.parent = curr;
+                        break;
+                    }
+                } else if (cmp > 0) {
+                    if (curr.right != nil) {
+                        curr = curr.right;
+                    } else {
+                        curr.right = nodeToInsert;
+                        nodeToInsert.parent = curr;
+                        break;
+                    }
+                } else {
+                    return false;
+                }
+            }
+
+            insertFixup(nodeToInsert);
+        }
+
+        size++;
+
+        return true;
     }
 
     /**
@@ -57,32 +91,61 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      */
     @Override
     public boolean contains(Object object) {
+        if (object == null) {
+            throw new NullPointerException("value is null");
+        }
         @SuppressWarnings("unchecked")
-        E value = (E) object;
-        //todo: следует реализовать
+        E key = (E) object;
+        if (root != null) {
+            Node curr = root;
+            while (curr.value != null) {
+                int cmp = compare(curr.value, key);
+                if (cmp == 0) {
+                    return true;
+                } else if (cmp < 0) {
+                    curr = curr.right;
+                } else {
+                    curr = curr.left;
+                }
+            }
+        }
         return false;
     }
 
     /**
      * Ищет наименьший элемент в дереве
+     *
      * @return Возвращает наименьший элемент в дереве
      * @throws NoSuchElementException если дерево пустое
      */
     @Override
     public E first() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("first");
+        if (isEmpty()) {
+            throw new NoSuchElementException("first");
+        }
+        Node curr = root;
+        while (curr.left != nil) {
+            curr = curr.left;
+        }
+        return curr.value;
     }
 
     /**
      * Ищет наибольший элемент в дереве
+     *
      * @return Возвращает наибольший элемент в дереве
      * @throws NoSuchElementException если дерево пустое
      */
     @Override
     public E last() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("last");
+        if (isEmpty()) {
+            throw new NoSuchElementException("last");
+        }
+        Node curr = root;
+        while (curr.right != nil) {
+            curr = curr.right;
+        }
+        return curr.value;
     }
 
     private int compare(E v1, E v2) {
@@ -96,7 +159,7 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -146,6 +209,106 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         }
     }
 
+    private void insertFixup(Node z) {
+        while (z.parent.color == Color.RED) {
+            Node y = nil;
+            if (z.parent == z.parent.parent.left) {
+                y = z.parent.parent.right;
+
+                if (y.color == Color.RED) {
+                    z.parent.color = Color.BLACK;
+                    y.color = Color.BLACK;
+                    z.parent.parent.color = Color.RED;
+                    z = z.parent.parent;
+                } else {
+                    if (z == z.parent.right) {
+                        z = z.parent;
+                        rotateLeft(z);
+                    }
+
+                    z.parent.color = Color.BLACK;
+                    z.parent.parent.color = Color.RED;
+                    rotateRight(z.parent.parent);
+                }
+            } else {
+                y = z.parent.parent.left;
+                if (y.color == Color.RED) {
+                    z.parent.color = Color.BLACK;
+                    y.color = Color.BLACK;
+                    z.parent.parent.color = Color.RED;
+                    z = z.parent.parent;
+                } else {
+                    if (z == z.parent.left) {
+                        z = z.parent;
+                        rotateRight(z);
+                    }
+
+                    z.parent.color = Color.BLACK;
+                    z.parent.parent.color = Color.RED;
+                    rotateLeft(z.parent.parent);
+                }
+            }
+        }
+
+        root.color = Color.BLACK;
+    }
+
+    private void rotateLeft(Node x) {
+        if (x.parent != nil) {
+            if (x == x.parent.left) {
+                x.parent.left = x.right;
+            } else {
+                x.parent.right = x.right;
+            }
+
+            x.right.parent = x.parent;
+            x.parent = x.right;
+
+            if (x.right.left != nil) {
+                x.right.left.parent = x;
+            }
+
+            x.right = x.right.left;
+            x.parent.left = x;
+        } else {
+            Node right = root.right;
+            root.right = right.left;
+            right.left.parent = root;
+            root.parent = right;
+            right.left = root;
+            right.parent = nil;
+            root = right;
+        }
+    }
+
+    private void rotateRight(Node x) {
+        if (x.parent != nil) {
+            if (x == x.parent.left) {
+                x.parent.left = x.left;
+            } else {
+                x.parent.right = x.left;
+            }
+
+            x.left.parent = x.parent;
+            x.parent = x.left;
+
+            if (x.left.right != nil) {
+                x.left.right.parent = x;
+            }
+
+            x.left = x.left.right;
+            x.parent.right = x;
+        } else {
+            Node left = root.left;
+            root.left = root.left.right;
+            left.right.parent = root;
+            root.parent = left;
+            left.right = root;
+            left.parent = nil;
+            root = left;
+        }
+    }
+
     private int traverseTreeAndCheckBalanced(Node node) throws NotBalancedTreeException {
         if (node == null) {
             return 1;
@@ -175,12 +338,16 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
         RED, BLACK
     }
 
-    static final class Node<E> {
+    final class Node {
         E value;
-        Node<E> left;
-        Node<E> right;
-        Node<E> parent;
+        Node left = nil;
+        Node right = nil;
+        Node parent = nil;
         Color color = Color.BLACK;
+
+        Node(E value) {
+            this.value = value;
+        }
 
         @Override
         public String toString() {

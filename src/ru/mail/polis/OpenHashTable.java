@@ -6,11 +6,15 @@ import java.util.Set;
 
 public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E> implements Set<E> {
 
+    private int INITIAL_CAPACITY = 8;
+    private Object[] table;
     private int size; //количество элементов в хеш-таблице
-    private int tableSize; //размер хещ-таблицы todo: измените на array.length
+    private int tableSize; //размер хещ-таблицы
 
     public OpenHashTable() {
         //todo
+        this.table = new Object[INITIAL_CAPACITY];
+        size = 0;
     }
 
     /**
@@ -22,9 +26,27 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
-        return false;
+        int probId = 0;
+        int hashcode = Math.abs(value.hashCode(table.length, probId++));
+
+        while (probId < table.length) {
+            if (table[hashcode] == null) {
+                table[hashcode] = value;
+                size++;
+                break;
+            }
+
+            if (table[hashcode].equals(value)) {
+                return false;
+            }
+
+            hashcode = Math.abs(value.hashCode(table.length, probId++));
+        }
+        if (probId >= table.length) {
+            resize();
+            return add(value);
+        }
+        return true;
     }
 
     /**
@@ -34,12 +56,26 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      * @param object элемент который необходимо вставить
      * @return true, если элемент содержался в хеш-таблице
      */
+
     @Override
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        int probId = 0;
+        int hashcode = Math.abs(value.hashCode(table.length, probId++));
+
+        while (probId < table.length) {
+            if (table[hashcode] == null) {
+                return false;
+            }
+            if (table[hashcode].equals(value)) {
+                table[hashcode] = null;
+                size--;
+                return true;
+            }
+
+            hashcode = Math.abs(value.hashCode(table.length, probId++));
+        }
         return false;
     }
 
@@ -54,8 +90,18 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean contains(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        //Используйте value.hashCode(tableSize, probId) для вычисления хеша
+        int probId = 0;
+        int hashcode = Math.abs(value.hashCode(table.length, probId++));
+
+        while (probId < table.length) {
+            if (table[hashcode] == null) {
+                return false;
+            }
+            if (table[hashcode].equals(value)) {
+                return true;
+            }
+            hashcode = Math.abs(value.hashCode(table.length, probId++));
+        }
         return false;
     }
 
@@ -66,6 +112,17 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     public int getTableSize() {
         return tableSize;
+    }
+
+    private void resize() {
+        int tableSize = 2 * table.length;
+        size = 0;
+        Object[] oldTable = table;
+        table = new Object[tableSize];
+
+        for (int i = 0; i < oldTable.length; i++)
+            if (oldTable[i] != null)
+                add((E) oldTable[i]);
     }
 
     @Override

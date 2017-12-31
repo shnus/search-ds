@@ -10,9 +10,8 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     private final Comparator<E> comparator;
 
-    private BinarySearchTree.Node root; //todo: Создайте новый класс если нужно. Добавьте новые поля, если нужно.
+    private Node root;
     private int size;
-    //todo: добавьте дополнительные переменные и/или методы если нужно
 
     public AVLTree() {
         this(null);
@@ -31,8 +30,39 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public boolean add(E value) {
-        //todo: следует реализовать
-        return false;
+        if (root == null) {
+            root = new Node(value);
+            size++;
+        } else {
+            try {
+                root = insert(root, value);
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Node insert(Node root, E key) {
+        if (root == null) {
+            size++;
+            return new Node(key);
+        }
+        int cmp = compare(key, root.value);
+        if (cmp > 0) {
+            Node node = insert(root.right, key);
+            node.parent = root;
+            root.right = node;
+        } else if (cmp < 0) {
+            Node node = insert(root.left, key);
+            node.parent = root;
+            root.left = node;
+        } else {
+            throw new IllegalArgumentException("This key already exists");
+        }
+
+        return balance(root);
     }
 
     /**
@@ -46,8 +76,39 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        return false;
+        try {
+            root = remove(root,value);
+            size--;
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
+
+    private Node remove(Node node, E value) throws NoSuchElementException {
+        if (node == null) {
+            throw new NoSuchElementException();
+        } else {
+            int cmp = compare(node.value,value);
+
+            if (cmp < 0) {
+                node.right = remove(node.right,value);
+            } else if (cmp > 0) {
+                node.left = remove(node.left,value);
+            } else {
+                Node leftNode = node.left;
+                Node rightNode = node.right;
+                if (rightNode == null) {
+                    return leftNode;
+                }
+                Node minNode = findMin(rightNode);
+                minNode.right = removeMin(rightNode);
+                minNode.left = leftNode;
+                return balance(minNode);
+            }
+
+            return balance(node);
+        }
     }
 
     /**
@@ -61,8 +122,21 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
     public boolean contains(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
-        return false;
+        return find(root, value) != null;
+    }
+
+    private Node find(Node root, E key) {
+        while (root != null) {
+            int cmp = compare(key, root.value);
+            if (cmp > 0) {
+                root = root.right;
+            } else if (cmp < 0) {
+                root = root.left;
+            } else {
+                return root;
+            }
+        }
+        return null;
     }
 
     /**
@@ -72,8 +146,11 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public E first() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("first");
+        if (root == null) {
+            throw new NoSuchElementException("first");
+        }
+
+        return findMin(root).value;
     }
 
     /**
@@ -83,8 +160,11 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
      */
     @Override
     public E last() {
-        //todo: следует реализовать
-        throw new NoSuchElementException("last");
+        if (root == null) {
+            throw new NoSuchElementException("last");
+        }
+
+        return findMax(root).value;
     }
 
     private int compare(E v1, E v2) {
@@ -98,7 +178,7 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
 
     @Override
     public int size() {
-        return 0;
+        return size;
     }
 
     @Override
@@ -140,7 +220,89 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         traverseTreeAndCheckBalanced(root);
     }
 
-    private int traverseTreeAndCheckBalanced(BinarySearchTree.Node curr) throws NotBalancedTreeException {
+    private Node balance(Node v) {
+        updateHeight(v);
+        if (diff(v) == -2) {
+            // rotateLeft or bigRotateLeft
+            if (diff(v.right) > 0) {
+                v.right = rotateRight(v.right);
+            }
+            return rotateLeft(v);
+        } else if (diff(v) == 2) {
+            // rotateRight or bigRotateRight
+            if (diff(v.left) < 0) {
+                v.left = rotateLeft(v.left);
+            }
+            return rotateRight(v);
+        }
+
+        // no balancing needed
+        return v;
+    }
+
+    private int height(Node v) {
+        return v == null ? 0 : v.height;
+    }
+
+    private void updateHeight(Node v) {
+        v.height = Math.max(height(v.left), height(v.right)) + 1;
+    }
+
+    private int diff(Node v) {
+        return height(v.left) - height(v.right);
+    }
+
+    private Node rotateLeft(Node v) {
+        Node x = v.right;
+
+        x.parent = v.parent;
+        v.parent = x;
+        v.right = x.left;
+        x.left = v;
+
+        updateHeight(v);
+        updateHeight(x);
+
+        return x;
+    }
+
+    private Node rotateRight(Node v) {
+        Node x = v.left;
+
+        x.parent = v.parent;
+        v.parent = x;
+        v.left = x.right;
+        x.right = v;
+
+        updateHeight(v);
+        updateHeight(x);
+
+        return x;
+    }
+
+    private Node findMin(Node root) {
+        if (root == null) return null;
+        while (root.left != null) {
+            root = root.left;
+        }
+        return root;
+    }
+
+    private Node findMax(Node root) {
+        if (root == null) return null;
+        while (root.right != null) {
+            root = root.right;
+        }
+        return root;
+    }
+
+    private Node removeMin(Node v) {
+        if (v.left == null) return v.right;
+        v.left = removeMin(v.left);
+        return balance(v);
+    }
+
+    private int traverseTreeAndCheckBalanced(Node curr) throws NotBalancedTreeException {
         if (curr == null) {
             return 1;
         }
@@ -153,4 +315,28 @@ public class AVLTree<E extends Comparable<E>> extends AbstractSet<E> implements 
         return Math.max(leftHeight, rightHeight) + 1;
     }
 
+    class Node {
+        E value;
+        int height;
+        Node parent, left, right;
+
+        Node(E value) {
+            this.value = value;
+            this.height = 1;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("N{");
+            sb.append("d=").append(value);
+            if (left != null) {
+                sb.append(", l=").append(left);
+            }
+            if (right != null) {
+                sb.append(", r=").append(right);
+            }
+            sb.append('}');
+            return sb.toString();
+        }
+    }
 }

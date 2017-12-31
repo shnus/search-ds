@@ -9,6 +9,7 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import ru.mail.polis.ChainHashTable;
 import ru.mail.polis.CheckedOpenHashTableEntity;
 import ru.mail.polis.OpenHashTable;
 import ru.mail.polis.SimpleStudentGenerator;
