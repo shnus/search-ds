@@ -59,6 +59,9 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     @Override
     public boolean remove(Object object) {
+        if (object == null) {
+            throw new NullPointerException("value is null");
+        }
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
@@ -88,6 +91,9 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean contains(Object object) {
+        if (object == null) {
+            throw new NullPointerException("value is null");
+        }
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;

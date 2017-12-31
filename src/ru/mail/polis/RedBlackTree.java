@@ -78,7 +78,9 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
     public boolean remove(Object object) {
         @SuppressWarnings("unchecked")
         E value = (E) object;
-        //todo: следует реализовать
+
+        size--;
+
         return false;
     }
 
