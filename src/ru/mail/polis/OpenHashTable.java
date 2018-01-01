@@ -8,12 +8,14 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     private int INITIAL_CAPACITY = 8;
     private Object[] table;
+    private boolean[] isDeleted;
     private int size; //количество элементов в хеш-таблице
     private int tableSize; //размер хещ-таблицы
 
     public OpenHashTable() {
         //todo
         this.table = new Object[INITIAL_CAPACITY];
+        this.isDeleted = new boolean[INITIAL_CAPACITY];
         size = 0;
     }
 
@@ -28,18 +30,15 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
     public boolean add(E value) {
         int probId = 0;
         int hashcode = Math.abs(value.hashCode(table.length, probId++));
-
         while (probId < table.length) {
             if (table[hashcode] == null) {
                 table[hashcode] = value;
                 size++;
                 break;
             }
-
             if (table[hashcode].equals(value)) {
                 return false;
             }
-
             hashcode = Math.abs(value.hashCode(table.length, probId++));
         }
         if (probId >= table.length) {
@@ -59,25 +58,26 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     @Override
     public boolean remove(Object object) {
-        if (object == null) {
-            throw new NullPointerException("value is null");
-        }
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
-        int hashcode = Math.abs(value.hashCode(table.length, probId++));
+        int hashcode;
 
         while (probId < table.length) {
-            if (table[hashcode] == null) {
-                return false;
+            hashcode = Math.abs(value.hashCode(table.length, probId++));
+            if(table[hashcode]==null){
+                if(isDeleted[hashcode]){
+                    continue;
+                } else {
+                    return false;
+                }
             }
-            if (table[hashcode].equals(value)) {
+            if (value.equals(table[hashcode])) {
                 table[hashcode] = null;
+                isDeleted[hashcode] = true;
                 size--;
                 return true;
             }
-
-            hashcode = Math.abs(value.hashCode(table.length, probId++));
         }
         return false;
     }
@@ -91,22 +91,23 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
      */
     @Override
     public boolean contains(Object object) {
-        if (object == null) {
-            throw new NullPointerException("value is null");
-        }
         @SuppressWarnings("unchecked")
         E value = (E) object;
         int probId = 0;
-        int hashcode = Math.abs(value.hashCode(table.length, probId++));
+        int hashcode;
 
         while (probId < table.length) {
-            if (table[hashcode] == null) {
-                return false;
+            hashcode = Math.abs(value.hashCode(table.length, probId++));
+            if(table[hashcode]==null){
+                if(isDeleted[hashcode]){
+                    continue;
+                } else {
+                    return false;
+                }
             }
             if (table[hashcode].equals(value)) {
                 return true;
             }
-            hashcode = Math.abs(value.hashCode(table.length, probId++));
         }
         return false;
     }
@@ -125,6 +126,7 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
         size = 0;
         Object[] oldTable = table;
         table = new Object[tableSize];
+        isDeleted = new boolean[tableSize];
 
         for (int i = 0; i < oldTable.length; i++)
             if (oldTable[i] != null)
@@ -133,7 +135,18 @@ public class OpenHashTable<E extends OpenHashTableEntity> extends AbstractSet<E>
 
     @Override
     public Iterator<E> iterator() {
-        throw new UnsupportedOperationException();
+        //    throw new UnsupportedOperationException();
+        return new Iterator<E>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public E next() {
+                return null;
+            }
+        };
     }
 
 }

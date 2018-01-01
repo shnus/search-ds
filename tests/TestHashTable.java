@@ -1,18 +1,13 @@
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import ru.mail.polis.ChainHashTable;
 import ru.mail.polis.CheckedOpenHashTableEntity;
 import ru.mail.polis.OpenHashTable;
 import ru.mail.polis.SimpleStudentGenerator;
+
+import java.util.*;
 
 /**
  * Created by Nechaev Mikhail
@@ -71,7 +66,7 @@ public class TestHashTable extends AbstractSetTest {
     public void test04_01() {
         if (testSet instanceof OpenHashTable) {
             OpenHashTable<CheckedOpenHashTableEntity> openHashTable = (OpenHashTable<CheckedOpenHashTableEntity>) testSet;
-            int tableSize = openHashTable.getTableSize();
+            int tableSize = 2 + new Random(System.currentTimeMillis()).nextInt(9999999);
             CheckedOpenHashTableEntity entity = generate();
             Assert.assertTrue("isHashFunctionValid. tableSize = " + tableSize, entity.isHashFunctionValid(tableSize));
         }
@@ -87,7 +82,7 @@ public class TestHashTable extends AbstractSetTest {
                 openHashTable.add(entity);
                 if (tableSize != openHashTable.getTableSize()) {
                     tableSize = openHashTable.getTableSize();
-                    Assert.assertTrue("isHashFunctionValid. tableSize = " + tableSize, entity.isHashFunctionValid(tableSize));;
+                    Assert.assertTrue("isHashFunctionValid. tableSize = " + tableSize, entity.isHashFunctionValid(tableSize));
                 }
             }
         }

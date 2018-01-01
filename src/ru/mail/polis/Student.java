@@ -23,16 +23,6 @@ public class Student extends CheckedOpenHashTableEntity {
     private String email;
     private String mobile; //Номер телефона
 
-    @Override
-    public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
-        if(tableSize < 0 || probId < 0) throw new IllegalArgumentException();
-        return (hashCode()+probId)%tableSize;
-    }
-
-    public enum  Gender {
-        MALE, FEMALE
-    }
-
     public Student(String firstName, String lastName, Gender gender, LocalDate birthday, int groupId, int yearOfAdmission) {
         this.id = counter++;
         this.firstName = firstName;
@@ -50,6 +40,19 @@ public class Student extends CheckedOpenHashTableEntity {
         this.email = email;
         this.mobile = mobile;
     }
+
+    @Override
+    public int hashCode(int tableSize, int probId) throws IllegalArgumentException {
+        if (tableSize < 0 || probId < 0) throw new IllegalArgumentException();
+
+        return (Math.abs(hashCode(31) +
+                probId * h2(hashCode2(57), tableSize)) % tableSize);
+    }
+
+    private int h2(int k, int tableSize) {
+        return k % (tableSize - 1) + 1;
+    }
+
 
     public long getId() {
         return id;
@@ -123,18 +126,31 @@ public class Student extends CheckedOpenHashTableEntity {
         return mobile != null ? mobile.equals(student.mobile) : student.mobile == null;
     }
 
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + firstName.hashCode();
-        result = 31 * result + lastName.hashCode();
-        result = 31 * result + gender.hashCode();
-        result = 31 * result + birthday.hashCode();
-        result = 31 * result + groupId;
-        result = 31 * result + yearOfAdmission;
-        result = 31 * result + (photoReference != null ? photoReference.hashCode() : 0);
-        result = 31 * result + (email != null ? email.hashCode() : 0);
-        result = 31 * result + (mobile != null ? mobile.hashCode() : 0);
+    public int hashCode(int k) {
+        int result = (int) (id ^ (id >>> k + 1));
+        result = k * result + firstName.hashCode();
+        result = k * result + lastName.hashCode();
+        result = k * result + gender.hashCode();
+        result = k * result + birthday.hashCode();
+        result = k * result + groupId;
+        result = k * result + yearOfAdmission;
+        result = k * result + (photoReference != null ? photoReference.hashCode() : 0);
+        result = k * result + (email != null ? email.hashCode() : 0);
+        result = k * result + (mobile != null ? mobile.hashCode() : 0);
+        return result;
+    }
+
+    public int hashCode2(int k) {
+        int result = (int) (id >>> k + 1);
+//        result = k * result + firstName.hashCode();
+//        result = k * result + lastName.hashCode();
+//        result = k * result + gender.hashCode();
+//        result = k * result + birthday.hashCode();
+//        result = k * result + groupId;
+//        result = k * result + yearOfAdmission;
+//        result = k * result + (photoReference != null ? photoReference.hashCode() : 0);
+//        result = k * result + (email != null ? email.hashCode() : 0);
+//        result = k * result + (mobile != null ? mobile.hashCode() : 0);
         return result;
     }
 
@@ -152,5 +168,9 @@ public class Student extends CheckedOpenHashTableEntity {
                 ", email='" + email + '\'' +
                 ", mobile='" + mobile + '\'' +
                 '}';
+    }
+
+    public enum Gender {
+        MALE, FEMALE
     }
 }
