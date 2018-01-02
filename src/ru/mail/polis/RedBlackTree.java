@@ -74,14 +74,146 @@ public class RedBlackTree<E extends Comparable<E>> extends AbstractSet<E> implem
      * @param object элемент который необходимо вставить
      * @return true, если элемент содержался в дереве
      */
+
+
     @Override
     public boolean remove(Object object) {
+
         @SuppressWarnings("unchecked")
         E value = (E) object;
+        Node nodeToDelete = find(value);
+        if (nodeToDelete == null || nodeToDelete == nil) {
+            return false;
+        }
+        Node y, x;
 
+        if (nodeToDelete.left == nil || nodeToDelete.right == nil) {
+            y = nodeToDelete;
+        } else {
+            y = successor(nodeToDelete);
+        }
+
+        if (y.left != nil) {
+            x = y.left;
+        } else {
+            x = y.right;
+        }
+
+        x.parent = y.parent;
+
+        if (y.parent == nil) {
+            root = x;
+        } else {
+            if (y == y.parent.left) {
+                y.parent.left = x;
+            } else {
+                y.parent.right = x;
+
+            }
+        }
+
+        if (y != nodeToDelete) {
+            nodeToDelete.value = y.value;
+        }
+
+        if (y.color == Color.BLACK) {
+            deleteFixup(x);
+        }
         size--;
 
-        return false;
+        return true;
+    }
+
+    private void deleteFixup(Node x) {
+        Node w;
+
+        while (x != root && x.color == Color.BLACK) {
+            if (x == x.parent.left) {
+                w = x.parent.right;
+                if (w.color == Color.RED) {
+                    w.color = Color.BLACK;
+                    x.parent.color = Color.RED;
+                    rotateLeft(x.parent);
+                    w = x.parent.right;
+                }
+                if (w.left.color == Color.BLACK && w.right.color == Color.BLACK) {
+                    w.color = Color.RED;
+                    x = x.parent;
+                } else {
+                    if (w.right.color == Color.BLACK) {
+                        w.left.color = Color.BLACK;
+                        w.color = Color.RED;
+                        rotateRight(w);
+                        w = x.parent.right;
+                    }
+                    w.color = x.parent.color;
+                    x.parent.color = Color.BLACK;
+                    w.right.color = Color.BLACK;
+                    rotateLeft(x.parent);
+                    x = root;
+                }
+            } else {
+                w = x.parent.left;
+                if (w.color == Color.RED) {
+                    w.color = Color.BLACK;
+                    x.parent.color = Color.RED;
+                    rotateRight(x.parent);
+                    w = x.parent.left;
+                }
+                if (w.right.color == Color.BLACK && w.left.color == Color.BLACK) {
+                    w.color = Color.RED;
+                    x = x.parent;
+                } else {
+                    if (w.left.color == Color.BLACK) {
+                        w.right.color = Color.BLACK;
+                        w.color = Color.RED;
+                        rotateLeft(w);
+                        w = x.parent.left;
+                    }
+                    w.color = x.parent.color;
+                    x.parent.color = Color.BLACK;
+                    w.left.color = Color.BLACK;
+                    rotateRight(x.parent);
+                    x = root;
+                }
+            }
+        }
+        x.color = Color.BLACK;
+    }
+
+    private Node find(Object object) {
+        if (object == null) return null;
+        Node curr = root;
+        while (curr != nil && compare(curr.value, (E) object) != 0) {
+            if (compare((E) object, curr.value) < 0) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+        return curr;
+    }
+
+    private Node successor(Node v) {
+
+        if (v.right != nil) {
+            return min(v.right);
+        }
+        Node y = v.parent;
+
+        while (y != nil && v == y.right) {
+            v = y;
+            y = y.parent;
+        }
+        return y;
+    }
+
+    private Node min(Node v) {
+        if (root == null) return null;
+        while (v.left != nil) {
+            v = v.left;
+        }
+        return v;
     }
 
     /**
